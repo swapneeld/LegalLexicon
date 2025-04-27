@@ -4,7 +4,8 @@ import { storage } from "./storage";
 import { 
   insertUserSchema, insertTermSchema, insertCaseSchema, 
   insertExampleSchema, insertFavoriteSchema, insertReportSchema, 
-  insertVisitorSchema, insertSubmissionSchema 
+  insertVisitorSchema, insertSubmissionSchema,
+  insertLawCourseSchema, insertLawTopicSchema, insertLawQuestionSchema
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
