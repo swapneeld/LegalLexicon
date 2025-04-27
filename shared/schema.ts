@@ -16,6 +16,35 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Admin Users table (separate for security)
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  mobileNumber: text("mobile_number").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastLogin: timestamp("last_login"),
+});
+
+// Public submissions table - for non-logged in users
+export const submissions = pgTable("submissions", {
+  id: serial("id").primaryKey(),
+  term: text("term").notNull(),
+  definition: text("definition").notNull(),
+  category: text("category").notNull(),
+  example: text("example"),
+  caseName: text("case_name"),
+  caseCitation: text("case_citation"),
+  caseDescription: text("case_description"),
+  submitterName: text("submitter_name"),
+  submitterMobile: text("submitter_mobile").notNull(),
+  submitterCity: text("submitter_city"),
+  approved: boolean("approved").default(false).notNull(),
+  processed: boolean("processed").default(false).notNull(),
+  processedBy: integer("processed_by").references(() => adminUsers.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Legal terms dictionary
 export const terms = pgTable("terms", {
   id: serial("id").primaryKey(),
@@ -27,6 +56,7 @@ export const terms = pgTable("terms", {
   category: text("category"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   submittedBy: integer("submitted_by").references(() => users.id),
+  submissionId: integer("submission_id").references(() => submissions.id),
   isApproved: boolean("is_approved").default(false).notNull(),
   wordOfTheDayDate: timestamp("word_of_the_day_date"),
 });
@@ -40,6 +70,7 @@ export const cases = pgTable("cases", {
   description: text("description").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   submittedBy: integer("submitted_by").references(() => users.id),
+  submissionId: integer("submission_id").references(() => submissions.id),
   isApproved: boolean("is_approved").default(false).notNull(),
 });
 
@@ -50,6 +81,7 @@ export const examples = pgTable("examples", {
   example: text("example").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   submittedBy: integer("submitted_by").references(() => users.id),
+  submissionId: integer("submission_id").references(() => submissions.id),
   isApproved: boolean("is_approved").default(false).notNull(),
   upvotes: integer("upvotes").default(0).notNull(),
   downvotes: integer("downvotes").default(0).notNull(),
@@ -93,6 +125,22 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 });
 
+export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
+  id: true,
+  createdAt: true,
+  lastLogin: true,
+});
+
+export const insertSubmissionSchema = createInsertSchema(submissions).omit({
+  id: true,
+  createdAt: true,
+  approved: true,
+  processed: true,
+  processedBy: true,
+}).extend({
+  submitterMobile: z.string().regex(/^[0-9]{10}$/, "Mobile number must be 10 digits"),
+});
+
 export const insertTermSchema = createInsertSchema(terms).omit({
   id: true,
   createdAt: true,
@@ -128,6 +176,8 @@ export const insertVoteSchema = createInsertSchema(votes).omit({
 
 // Types for inserts
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+export type InsertSubmission = z.infer<typeof insertSubmissionSchema>;
 export type InsertTerm = z.infer<typeof insertTermSchema>;
 export type InsertCase = z.infer<typeof insertCaseSchema>;
 export type InsertExample = z.infer<typeof insertExampleSchema>;
@@ -137,6 +187,8 @@ export type InsertVote = z.infer<typeof insertVoteSchema>;
 
 // Types for selects
 export type User = typeof users.$inferSelect;
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type Submission = typeof submissions.$inferSelect;
 export type Term = typeof terms.$inferSelect;
 export type Case = typeof cases.$inferSelect;
 export type Example = typeof examples.$inferSelect;

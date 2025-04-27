@@ -1,13 +1,27 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertUserSchema, insertTermSchema, insertCaseSchema, 
   insertExampleSchema, insertFavoriteSchema, insertReportSchema, 
-  insertVoteSchema 
+  insertVoteSchema, insertSubmissionSchema 
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
+
+// Session types
+declare module 'express-session' {
+  interface SessionData {
+    adminUser?: {
+      id: number;
+      mobileNumber: string;
+      name?: string;
+    };
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API routes prefix
