@@ -1,65 +1,102 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
-import { auth, subscribeToAuthChanges, createOrGetUser } from '@/lib/firebase';
-import { User } from '@shared/schema';
+import { 
+  auth, 
+  signInWithGoogle, 
+  signOut as firebaseSignOut
+} from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
-interface AuthContextType {
-  currentUser: User | null;
-  firebaseUser: FirebaseUser | null;
+// Define the shape of our auth context
+type AuthContextType = {
+  user: FirebaseUser | null;
   loading: boolean;
   error: string | null;
-}
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+};
 
+// Create the context with a default undefined value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Create the provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Set up auth state listener on mount
   useEffect(() => {
-    const unsubscribe = subscribeToAuthChanges(async (user) => {
-      setFirebaseUser(user);
-      setLoading(true);
-
-      try {
-        if (user) {
-          // When user signs in, create or get the user from our backend
-          const dbUser = await createOrGetUser(user);
-          setCurrentUser(dbUser);
-        } else {
-          // User signed out
-          setCurrentUser(null);
-        }
-        setError(null);
-      } catch (err) {
-        console.error('Auth context error:', err);
-        setError('Failed to authenticate. Please try again.');
-        setCurrentUser(null);
-      } finally {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        setUser(firebaseUser);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Auth state change error:', error);
+        setError(error.message);
         setLoading(false);
       }
-    });
+    );
 
-    // Cleanup subscription on unmount
+    // Clean up subscription on unmount
     return () => unsubscribe();
   }, []);
 
+  // Sign in with Google
+  const signIn = async () => {
+    try {
+      setLoading(true);
+      await signInWithGoogle();
+      setError(null);
+    } catch (error) {
+      console.error('Sign in error:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Failed to sign in');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sign out
+  const signOut = async () => {
+    try {
+      setLoading(true);
+      await firebaseSignOut();
+      setError(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Failed to sign out');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Create the context value
   const value = {
-    currentUser,
-    firebaseUser,
+    user,
     loading,
-    error
+    error,
+    signIn,
+    signOut
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuthContext = () => {
+// Custom hook to use the auth context
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };

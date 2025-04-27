@@ -21,17 +21,15 @@ const Home: React.FC = () => {
             <h2 className="text-xl font-medium text-neutral-900 mb-4">Explore Legal Terms</h2>
             
             <div className="mt-4 text-center">
-              <Link href="/dashboard">
-                <a className="inline-block">
-                  <Button 
-                    variant="default"
-                    className="text-white font-medium inline-flex items-center"
-                  >
-                    Browse Dictionary
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </a>
-              </Link>
+              <span onClick={() => window.location.href = '/dashboard'}>
+                <Button 
+                  variant="default"
+                  className="text-white font-medium inline-flex items-center"
+                >
+                  Browse Dictionary
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </span>
             </div>
           </div>
         </div>
@@ -64,9 +62,10 @@ const Home: React.FC = () => {
               Connect with legal professionals, contribute examples, and participate in discussions.
             </p>
             <Button 
+              onClick={() => window.location.href = '/dashboard'}
               className="w-full"
             >
-              Sign In
+              Get Started
             </Button>
           </div>
         </div>
