@@ -6,6 +6,7 @@ import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import TermDetails from "@/pages/term-details";
 import SubmitPage from "@/pages/submit";
+import NotesPage from "@/pages/notes";
 import Footer from "@/components/layout/Footer";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,11 @@ function Header() {
             <li>
               <Link href="/dashboard">
                 <span className="hover:text-primary-foreground/80 transition-colors cursor-pointer">Dictionary</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/notes">
+                <span className="hover:text-primary-foreground/80 transition-colors cursor-pointer">Law Notes</span>
               </Link>
             </li>
             <li className="hidden md:block">
@@ -102,6 +108,7 @@ function App() {
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/term/:id" component={TermDetails} />
             <Route path="/submit" component={SubmitPage} />
+            <Route path="/notes" component={NotesPage} />
             <Route path="/admin">
               <Suspense fallback={<div className="p-8 text-center">Loading admin panel...</div>}>
                 {React.createElement(React.lazy(() => import('@/pages/admin')))}

@@ -76,7 +76,17 @@ const Navbar: React.FC = () => {
                         ? 'text-primary-dark border-b-2 border-primary font-medium' 
                         : 'text-neutral-700 hover:text-primary-light'
                     }`}>
-                      Dashboard
+                      Dictionary
+                    </a>
+                  </Link>
+
+                  <Link href="/notes">
+                    <a className={`px-3 py-5 text-sm font-medium transition-colors duration-150 ${
+                      location.startsWith('/notes') 
+                        ? 'text-primary-dark border-b-2 border-primary font-medium' 
+                        : 'text-neutral-700 hover:text-primary-light'
+                    }`}>
+                      Law Notes
                     </a>
                   </Link>
                   
@@ -204,7 +214,20 @@ const Navbar: React.FC = () => {
                   }`}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Dashboard
+                  Dictionary
+                </a>
+              </Link>
+
+              <Link href="/notes">
+                <a
+                  className={`block pl-3 pr-4 py-2 text-base font-medium w-full text-left ${
+                    location.startsWith('/notes')
+                      ? 'bg-primary-light text-white'
+                      : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900'
+                  }`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Law Notes
                 </a>
               </Link>
               

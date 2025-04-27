@@ -22,7 +22,14 @@ const sampleTerms = [
     definition: 'A legal action or writ by which detainees can seek relief from unlawful imprisonment. Latin for "you shall have the body."',
     category: 'Constitutional Law',
     examples: [
-      'The defendant filed a petition for habeas corpus after claiming his constitutional rights were violated during the trial.'
+      {
+        text: 'The defendant filed a petition for habeas corpus after claiming his constitutional rights were violated during the trial.',
+        type: 'american'
+      },
+      {
+        text: 'Rajesh, a local shopkeeper from Mumbai, applied for habeas corpus when he was detained without formal charges by the local police for seven days.',
+        type: 'indian'
+      }
     ],
     cases: [
       {
