@@ -110,14 +110,16 @@ export const reports = pgTable("reports", {
 });
 
 // Votes on examples
-export const votes = pgTable("votes", {
-  userId: integer("user_id").references(() => users.id).notNull(),
-  exampleId: integer("example_id").references(() => examples.id).notNull(),
-  vote: integer("vote").notNull(), // 1 for upvote, -1 for downvote
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (t) => ({
-  pk: primaryKey({ columns: [t.userId, t.exampleId] }),
-}));
+// Visitor tracking system
+export const visitors = pgTable("visitors", {
+  id: serial("id").primaryKey(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  visitDate: timestamp("visit_date").defaultNow().notNull(),
+  path: text("path"),
+  referrer: text("referrer"),
+  deviceType: text("device_type") // 'mobile', 'tablet', 'desktop'
+});
 
 // Zod schemas for inserts
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -170,8 +172,9 @@ export const insertReportSchema = createInsertSchema(reports).omit({
   resolvedAt: true,
 });
 
-export const insertVoteSchema = createInsertSchema(votes).omit({
-  createdAt: true,
+export const insertVisitorSchema = createInsertSchema(visitors).omit({
+  id: true,
+  visitDate: true,
 });
 
 // Types for inserts
@@ -183,7 +186,7 @@ export type InsertCase = z.infer<typeof insertCaseSchema>;
 export type InsertExample = z.infer<typeof insertExampleSchema>;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
-export type InsertVote = z.infer<typeof insertVoteSchema>;
+export type InsertVisitor = z.infer<typeof insertVisitorSchema>;
 
 // Types for selects
 export type User = typeof users.$inferSelect;
@@ -194,4 +197,4 @@ export type Case = typeof cases.$inferSelect;
 export type Example = typeof examples.$inferSelect;
 export type Favorite = typeof favorites.$inferSelect;
 export type Report = typeof reports.$inferSelect;
-export type Vote = typeof votes.$inferSelect;
+export type Visitor = typeof visitors.$inferSelect;

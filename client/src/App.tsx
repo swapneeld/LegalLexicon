@@ -1,7 +1,7 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Switch, Route, Link } from "wouter";
+import { Switch, Route, Link, useLocation } from "wouter";
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import TermDetails from "@/pages/term-details";
@@ -9,6 +9,7 @@ import SubmitPage from "@/pages/submit";
 import Footer from "@/components/layout/Footer";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
 
 // Header component
 function Header() {
@@ -48,8 +49,49 @@ function Header() {
   );
 }
 
+// Get device type
+function getDeviceType() {
+  const userAgent = navigator.userAgent;
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
+    return 'tablet';
+  }
+  if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(userAgent)) {
+    return 'mobile';
+  }
+  return 'desktop';
+}
+
 // Main App component
 function App() {
+  const [location] = useLocation();
+
+  // Track visitor
+  useEffect(() => {
+    const trackVisit = async () => {
+      try {
+        const visitorData = {
+          ipAddress: 'anonymous', // For privacy we don't collect actual IP
+          userAgent: navigator.userAgent.substring(0, 255), // Truncate if too long
+          path: location,
+          referrer: document.referrer || null,
+          deviceType: getDeviceType()
+        };
+        
+        await fetch('/api/track-visit', {
+          method: 'POST',
+          body: JSON.stringify(visitorData),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        console.error('Failed to track visit:', error);
+      }
+    };
+    
+    trackVisit();
+  }, [location]); // Track when location changes
+
   return (
     <TooltipProvider>
       <div className="flex flex-col min-h-screen">

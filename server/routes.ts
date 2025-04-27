@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   insertUserSchema, insertTermSchema, insertCaseSchema, 
   insertExampleSchema, insertFavoriteSchema, insertReportSchema, 
-  insertVoteSchema, insertSubmissionSchema 
+  insertVisitorSchema, insertSubmissionSchema 
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -262,40 +262,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Votes endpoints
-  app.post(`${apiRouter}/votes`, async (req, res) => {
+  // Visitor tracking endpoints
+  app.post(`${apiRouter}/track-visit`, async (req, res) => {
     try {
-      const data = insertVoteSchema.parse(req.body);
-      const vote = await storage.addVote(data);
-      res.status(201).json(vote);
+      const data = insertVisitorSchema.parse(req.body);
+      const visit = await storage.recordVisit(data);
+      res.status(201).json(visit);
     } catch (err) {
       handleError(res, err);
     }
   });
 
-  app.delete(`${apiRouter}/votes/:userId/:exampleId`, async (req, res) => {
+  app.get(`${apiRouter}/visitor-stats`, isAdmin, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const exampleId = parseInt(req.params.exampleId);
-      const success = await storage.removeVote(userId, exampleId);
-      if (!success) {
-        return res.status(404).json({ message: "Vote not found" });
-      }
-      res.status(204).send();
-    } catch (err) {
-      handleError(res, err);
-    }
-  });
-
-  app.get(`${apiRouter}/votes/:userId/:exampleId`, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      const exampleId = parseInt(req.params.exampleId);
-      const vote = await storage.getUserVote(userId, exampleId);
-      if (!vote) {
-        return res.status(404).json({ message: "Vote not found" });
-      }
-      res.json(vote);
+      const stats = await storage.getVisitorStats();
+      res.json(stats);
     } catch (err) {
       handleError(res, err);
     }
@@ -532,6 +513,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Mobile number and password are required" });
       }
       
+      // Hardcoded admin check for specific user
+      if (mobileNumber === '8007348348' && password === '8007348348') {
+        // Check if admin user exists in DB
+        let adminUser = await storage.getAdminByMobile(mobileNumber);
+        
+        // If not, create admin user
+        if (!adminUser) {
+          adminUser = await storage.createAdminUser({
+            mobileNumber,
+            password,
+            name: 'Admin',
+            isActive: true
+          });
+        }
+        
+        // Set session
+        req.session.adminUser = {
+          id: adminUser.id,
+          mobileNumber: adminUser.mobileNumber,
+          name: adminUser.name
+        };
+        
+        // Update last login time
+        await storage.updateAdminLastLogin(adminUser.id);
+        
+        return res.json({
+          id: adminUser.id,
+          mobileNumber: adminUser.mobileNumber,
+          name: adminUser.name
+        });
+      }
+      
+      // Regular DB authentication as fallback
       const adminUser = await storage.verifyAdminLogin(mobileNumber, password);
       if (!adminUser) {
         return res.status(401).json({ message: "Invalid mobile number or password" });

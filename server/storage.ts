@@ -33,6 +33,16 @@ export interface IStorage {
   }): Promise<{ submissions: schema.Submission[]; total: number }>;
   approveSubmission(id: number, adminId: number): Promise<boolean>;
   rejectSubmission(id: number, adminId: number): Promise<boolean>;
+  
+  // Visitor tracking
+  recordVisit(visitor: schema.InsertVisitor): Promise<schema.Visitor>;
+  getVisitorStats(): Promise<{ 
+    total: number; 
+    today: number;
+    lastWeek: number;
+    byPath: { path: string; count: number }[];
+    byDevice: { deviceType: string; count: number }[];
+  }>;
 }
 
 // Database implementation of the storage interface
@@ -298,6 +308,89 @@ export class DatabaseStorage implements IStorage {
       .returning();
       
     return !!updatedSubmission;
+  }
+  
+  // Visitor tracking
+  async recordVisit(visitor: schema.InsertVisitor): Promise<schema.Visitor> {
+    const [newVisitor] = await db.insert(schema.visitors)
+      .values(visitor)
+      .returning();
+      
+    return newVisitor;
+  }
+  
+  async getVisitorStats(): Promise<{ 
+    total: number; 
+    today: number;
+    lastWeek: number;
+    byPath: { path: string; count: number }[];
+    byDevice: { deviceType: string; count: number }[];
+  }> {
+    // Get total count
+    const [{ count: total }] = await db.select({
+      count: sql<number>`count(*)`
+    })
+    .from(schema.visitors);
+    
+    // Get today's count
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const [{ count: todayCount }] = await db.select({
+      count: sql<number>`count(*)`
+    })
+    .from(schema.visitors)
+    .where(
+      sql`${schema.visitors.visitDate} >= ${today} AND ${schema.visitors.visitDate} < ${tomorrow}`
+    );
+    
+    // Get last week's count
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    
+    const [{ count: lastWeekCount }] = await db.select({
+      count: sql<number>`count(*)`
+    })
+    .from(schema.visitors)
+    .where(
+      sql`${schema.visitors.visitDate} >= ${lastWeek}`
+    );
+    
+    // Get count by path
+    const byPathData = await db.select({
+      path: schema.visitors.path,
+      count: sql<number>`count(*)`
+    })
+    .from(schema.visitors)
+    .groupBy(schema.visitors.path)
+    .orderBy(sql`count(*) DESC`)
+    .limit(10);
+    
+    // Get count by device type
+    const byDeviceData = await db.select({
+      deviceType: schema.visitors.deviceType,
+      count: sql<number>`count(*)`
+    })
+    .from(schema.visitors)
+    .groupBy(schema.visitors.deviceType)
+    .orderBy(sql`count(*) DESC`);
+    
+    return {
+      total: Number(total) || 0,
+      today: Number(todayCount) || 0,
+      lastWeek: Number(lastWeekCount) || 0,
+      byPath: byPathData.map(item => ({ 
+        path: item.path || 'unknown', 
+        count: Number(item.count) || 0 
+      })),
+      byDevice: byDeviceData.map(item => ({ 
+        deviceType: item.deviceType || 'unknown', 
+        count: Number(item.count) || 0 
+      }))
+    };
   }
 }
 
