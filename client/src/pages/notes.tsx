@@ -112,7 +112,27 @@ const familyLawContent = {
     {
       name: "Om Prakash v. Radhacharan",
       citation: "(2009) 15 SCC 66",
-      summary: "Supreme Court clarified rules for property inherited by a female Hindu from her parents."
+      summary: "Supreme Court held that property inherited by a female Hindu from her father or mother should devolve upon the heirs of father in absence of her own issue."
+    },
+    {
+      name: "Bhagat Ram v. Teja Singh",
+      citation: "AIR 1999 SC 114",
+      summary: "Supreme Court ruled that a female's self-acquired property shall devolve upon her husband's heirs in absence of her own children."
+    },
+    {
+      name: "Vaishali Satish Ganorkar v. Satish Keshaorao Ganorkar",
+      citation: "(2012) 7 SCC 733",
+      summary: "Supreme Court clarified that a female's property inherited from husband shall devolve to husband's heirs if she dies issueless."
+    },
+    {
+      name: "Mamta Dinesh Vakil v. Bansi S. Wadhwa",
+      citation: "2012 (3) ABR 498",
+      summary: "Bombay High Court held that female's property devolves as per Section 15(1) unless covered by specific provisions under Section 15(2)."
+    },
+    {
+      name: "State of Punjab v. Balwant Singh",
+      citation: "(1992) 2 SCC 648",
+      summary: "Supreme Court emphasized that Section 15 of Hindu Succession Act completely replaces earlier customary Hindu laws on female property succession."
     }
   ],
   createdAt: "2023-04-15T10:30:00Z",
