@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
 import { 
-  auth, 
-  signOut as firebaseSignOut,
+  MockUser,
   signInWithEmail,
-  registerWithEmail
-} from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+  registerWithEmail,
+  signOut as mockSignOut,
+  onAuthStateChanged,
+  auth
+} from '@/lib/mockAuth';
 
 // Define the shape of our auth context
 type AuthContextType = {
-  user: FirebaseUser | null;
+  user: MockUser | null;
   loading: boolean;
   error: string | null;
   signIn: (email?: string, password?: string) => Promise<void>;
