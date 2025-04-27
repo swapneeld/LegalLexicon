@@ -2,7 +2,8 @@ import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
   signInWithPopup,
-  signInWithRedirect,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   GoogleAuthProvider, 
   FacebookAuthProvider,
   signOut as firebaseSignOut,
@@ -31,14 +32,24 @@ export const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
-// Sign in with Google
-export const signInWithGoogle = async () => {
+// Sign in with Email/Password
+export const signInWithEmail = async (email: string, password: string) => {
   try {
-    // Using redirect instead of popup for better compatibility in Replit environment
-    await signInWithRedirect(auth, googleProvider);
-    // No return value since redirect will navigate away from the page
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
   } catch (error) {
-    console.error("Error signing in with Google:", error);
+    console.error("Error signing in with email/password:", error);
+    throw error;
+  }
+};
+
+// Register with Email/Password
+export const registerWithEmail = async (email: string, password: string) => {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error("Error registering with email/password:", error);
     throw error;
   }
 };

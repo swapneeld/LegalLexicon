@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User as FirebaseUser } from 'firebase/auth';
 import { 
   auth, 
-  signInWithGoogle, 
-  signOut as firebaseSignOut
+  signOut as firebaseSignOut,
+  signInWithEmail,
+  registerWithEmail
 } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -12,8 +13,9 @@ type AuthContextType = {
   user: FirebaseUser | null;
   loading: boolean;
   error: string | null;
-  signIn: () => Promise<void>;
+  signIn: (email?: string, password?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
 };
 
 // Create the context with a default undefined value
@@ -44,11 +46,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => unsubscribe();
   }, []);
 
-  // Sign in with Google
-  const signIn = async () => {
+  // Sign in with email/password
+  const signIn = async (email?: string, password?: string) => {
     try {
       setLoading(true);
-      await signInWithGoogle();
+      
+      if (email && password) {
+        // If email and password are provided, use email/password sign in
+        await signInWithEmail(email, password);
+      } else {
+        // Default behavior - we'll implement a test user
+        await signInWithEmail('test@example.com', 'password123');
+      }
+      
       setError(null);
     } catch (error) {
       console.error('Sign in error:', error);
@@ -56,6 +66,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setError(error.message);
       } else {
         setError('Failed to sign in');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Register with email/password
+  const register = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      await registerWithEmail(email, password);
+      setError(null);
+    } catch (error) {
+      console.error('Registration error:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Failed to register');
       }
     } finally {
       setLoading(false);
@@ -86,7 +114,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loading,
     error,
     signIn,
-    signOut
+    signOut,
+    register
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

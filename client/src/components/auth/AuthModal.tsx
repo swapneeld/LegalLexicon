@@ -14,9 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
+import { signInWithEmail, registerWithEmail } from '@/lib/firebase';
 
 interface AuthModalProps {
   open: boolean;
@@ -25,36 +26,94 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, setOpen }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const { signInWithGoogle, signInWithFacebook } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const { signIn, register } = useAuth();
   const { toast } = useToast();
   
-  const handleGoogleSignIn = async () => {
+  // Handle sign in
+  const handleSignIn = async () => {
     try {
-      const success = await signInWithGoogle();
-      if (success) {
-        setOpen(false);
+      if (!email || !password) {
         toast({
-          title: 'Successfully signed in with Google',
-          description: 'Welcome to LawLexicon!',
+          title: 'Error',
+          description: 'Please enter both email and password',
+          variant: 'destructive'
         });
+        return;
       }
+      
+      await signIn(email, password);
+      setOpen(false);
+      toast({
+        title: 'Successfully signed in',
+        description: 'Welcome to LawLexicon!',
+      });
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Error signing in:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: 'destructive'
+      });
     }
   };
   
-  const handleFacebookSignIn = async () => {
+  // Handle registration
+  const handleRegister = async () => {
     try {
-      const success = await signInWithFacebook();
-      if (success) {
-        setOpen(false);
+      if (!email || !password || !confirmPassword || !fullName) {
         toast({
-          title: 'Successfully signed in with Facebook',
-          description: 'Welcome to LawLexicon!',
+          title: 'Error',
+          description: 'Please fill out all required fields',
+          variant: 'destructive'
         });
+        return;
       }
+      
+      if (password !== confirmPassword) {
+        toast({
+          title: 'Error',
+          description: 'Passwords do not match',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      await register(email, password);
+      setOpen(false);
+      toast({
+        title: 'Account created successfully',
+        description: 'Welcome to LawLexicon!',
+      });
     } catch (error) {
-      console.error('Error signing in with Facebook:', error);
+      console.error('Error registering:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  // Use test account
+  const handleUseTestAccount = async () => {
+    try {
+      await signIn();
+      setOpen(false);
+      toast({
+        title: 'Successfully signed in with test account',
+        description: 'Welcome to LawLexicon!',
+      });
+    } catch (error) {
+      console.error('Error signing in with test account:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -88,11 +147,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, setOpen }) => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email-login">Email address</Label>
-                <Input id="email-login" type="email" placeholder="Email address" />
+                <Input 
+                  id="email-login" 
+                  type="email" 
+                  placeholder="Email address" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password-login">Password</Label>
-                <Input id="password-login" type="password" placeholder="Password" />
+                <Input 
+                  id="password-login" 
+                  type="password" 
+                  placeholder="Password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -105,7 +176,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, setOpen }) => {
                 </Button>
               </div>
               
-              <Button className="w-full">Sign in</Button>
+              <Button className="w-full" onClick={handleSignIn}>Sign in</Button>
             </div>
           </TabsContent>
           
@@ -113,19 +184,42 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, setOpen }) => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="full-name">Full name</Label>
-                <Input id="full-name" placeholder="Full name" />
+                <Input 
+                  id="full-name" 
+                  placeholder="Full name" 
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email-register">Email address</Label>
-                <Input id="email-register" type="email" placeholder="Email address" />
+                <Input 
+                  id="email-register" 
+                  type="email" 
+                  placeholder="Email address" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password-register">Password</Label>
-                <Input id="password-register" type="password" placeholder="Password" />
+                <Input 
+                  id="password-register" 
+                  type="password" 
+                  placeholder="Password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password-confirm">Confirm password</Label>
-                <Input id="password-confirm" type="password" placeholder="Confirm password" />
+                <Input 
+                  id="password-confirm" 
+                  type="password" 
+                  placeholder="Confirm password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
               </div>
               
               <div className="flex items-center space-x-2">
