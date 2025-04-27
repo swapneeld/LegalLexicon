@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, primaryKey, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -121,6 +121,47 @@ export const visitors = pgTable("visitors", {
   deviceType: text("device_type") // 'mobile', 'tablet', 'desktop'
 });
 
+// Law courses table
+export const lawCourses = pgTable("law_courses", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  shortCode: text("short_code").notNull().unique(),
+  description: text("description"),
+  semester: integer("semester").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => adminUsers.id),
+});
+
+// Law topics table
+export const lawTopics = pgTable("law_topics", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => lawCourses.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  orderIndex: integer("order_index").notNull(),
+  isVisible: boolean("is_visible").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => adminUsers.id),
+});
+
+// Law questions/content table
+export const lawQuestions = pgTable("law_questions", {
+  id: serial("id").primaryKey(),
+  topicId: integer("topic_id").references(() => lawTopics.id).notNull(),
+  questionNumber: integer("question_number").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  isVisible: boolean("is_visible").default(true).notNull(),
+  accessControl: jsonb("access_control").default({}).notNull(), // JSON containing access restrictions
+  expiryDate: timestamp("expiry_date"), // When the content should no longer be accessible
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => adminUsers.id),
+});
+
 // Zod schemas for inserts
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -177,6 +218,25 @@ export const insertVisitorSchema = createInsertSchema(visitors).omit({
   visitDate: true,
 });
 
+// Law notes schemas
+export const insertLawCourseSchema = createInsertSchema(lawCourses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLawTopicSchema = createInsertSchema(lawTopics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLawQuestionSchema = createInsertSchema(lawQuestions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types for inserts
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
@@ -187,6 +247,9 @@ export type InsertExample = z.infer<typeof insertExampleSchema>;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
 export type InsertVisitor = z.infer<typeof insertVisitorSchema>;
+export type InsertLawCourse = z.infer<typeof insertLawCourseSchema>;
+export type InsertLawTopic = z.infer<typeof insertLawTopicSchema>;
+export type InsertLawQuestion = z.infer<typeof insertLawQuestionSchema>;
 
 // Types for selects
 export type User = typeof users.$inferSelect;
@@ -198,3 +261,6 @@ export type Example = typeof examples.$inferSelect;
 export type Favorite = typeof favorites.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type Visitor = typeof visitors.$inferSelect;
+export type LawCourse = typeof lawCourses.$inferSelect;
+export type LawTopic = typeof lawTopics.$inferSelect;
+export type LawQuestion = typeof lawQuestions.$inferSelect;

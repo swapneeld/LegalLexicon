@@ -43,6 +43,22 @@ export interface IStorage {
     byPath: { path: string; count: number }[];
     byDevice: { deviceType: string; count: number }[];
   }>;
+  
+  // Law Notes operations
+  createLawCourse(course: schema.InsertLawCourse): Promise<schema.LawCourse>;
+  getLawCourses(options?: { semester?: number; active?: boolean }): Promise<schema.LawCourse[]>;
+  getLawCourse(id: number): Promise<schema.LawCourse | undefined>;
+  updateLawCourse(id: number, course: Partial<schema.InsertLawCourse>): Promise<schema.LawCourse>;
+  
+  createLawTopic(topic: schema.InsertLawTopic): Promise<schema.LawTopic>;
+  getLawTopics(courseId: number, options?: { visible?: boolean }): Promise<schema.LawTopic[]>;
+  getLawTopic(id: number): Promise<schema.LawTopic | undefined>;
+  updateLawTopic(id: number, topic: Partial<schema.InsertLawTopic>): Promise<schema.LawTopic>;
+  
+  createLawQuestion(question: schema.InsertLawQuestion): Promise<schema.LawQuestion>;
+  getLawQuestions(topicId: number, options?: { visible?: boolean }): Promise<schema.LawQuestion[]>;
+  getLawQuestion(id: number): Promise<schema.LawQuestion | undefined>;
+  updateLawQuestion(id: number, question: Partial<schema.InsertLawQuestion>): Promise<schema.LawQuestion>;
 }
 
 // Database implementation of the storage interface
@@ -391,6 +407,131 @@ export class DatabaseStorage implements IStorage {
         count: Number(item.count) || 0 
       }))
     };
+  }
+
+  // Law Notes operations
+  async createLawCourse(course: schema.InsertLawCourse): Promise<schema.LawCourse> {
+    const [newCourse] = await db.insert(schema.lawCourses)
+      .values({
+        ...course,
+        updatedAt: new Date() // Ensure updatedAt is set
+      })
+      .returning();
+    
+    return newCourse;
+  }
+  
+  async getLawCourses(options: { semester?: number; active?: boolean } = {}): Promise<schema.LawCourse[]> {
+    const { semester, active } = options;
+    
+    let query = db.select().from(schema.lawCourses);
+    
+    if (semester !== undefined) {
+      query = query.where(eq(schema.lawCourses.semester, semester));
+    }
+    
+    if (active !== undefined) {
+      query = query.where(eq(schema.lawCourses.isActive, active));
+    }
+    
+    return await query.orderBy(schema.lawCourses.semester, schema.lawCourses.name);
+  }
+  
+  async getLawCourse(id: number): Promise<schema.LawCourse | undefined> {
+    const [course] = await db.select().from(schema.lawCourses).where(eq(schema.lawCourses.id, id));
+    return course;
+  }
+  
+  async updateLawCourse(id: number, course: Partial<schema.InsertLawCourse>): Promise<schema.LawCourse> {
+    const [updatedCourse] = await db.update(schema.lawCourses)
+      .set({
+        ...course,
+        updatedAt: new Date()
+      })
+      .where(eq(schema.lawCourses.id, id))
+      .returning();
+    
+    return updatedCourse;
+  }
+  
+  async createLawTopic(topic: schema.InsertLawTopic): Promise<schema.LawTopic> {
+    const [newTopic] = await db.insert(schema.lawTopics)
+      .values({
+        ...topic,
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return newTopic;
+  }
+  
+  async getLawTopics(courseId: number, options: { visible?: boolean } = {}): Promise<schema.LawTopic[]> {
+    const { visible } = options;
+    
+    let query = db.select().from(schema.lawTopics).where(eq(schema.lawTopics.courseId, courseId));
+    
+    if (visible !== undefined) {
+      query = query.where(eq(schema.lawTopics.isVisible, visible));
+    }
+    
+    return await query.orderBy(schema.lawTopics.orderIndex);
+  }
+  
+  async getLawTopic(id: number): Promise<schema.LawTopic | undefined> {
+    const [topic] = await db.select().from(schema.lawTopics).where(eq(schema.lawTopics.id, id));
+    return topic;
+  }
+  
+  async updateLawTopic(id: number, topic: Partial<schema.InsertLawTopic>): Promise<schema.LawTopic> {
+    const [updatedTopic] = await db.update(schema.lawTopics)
+      .set({
+        ...topic,
+        updatedAt: new Date()
+      })
+      .where(eq(schema.lawTopics.id, id))
+      .returning();
+    
+    return updatedTopic;
+  }
+  
+  async createLawQuestion(question: schema.InsertLawQuestion): Promise<schema.LawQuestion> {
+    const [newQuestion] = await db.insert(schema.lawQuestions)
+      .values({
+        ...question,
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return newQuestion;
+  }
+  
+  async getLawQuestions(topicId: number, options: { visible?: boolean } = {}): Promise<schema.LawQuestion[]> {
+    const { visible } = options;
+    
+    let query = db.select().from(schema.lawQuestions).where(eq(schema.lawQuestions.topicId, topicId));
+    
+    if (visible !== undefined) {
+      query = query.where(eq(schema.lawQuestions.isVisible, visible));
+    }
+    
+    return await query.orderBy(schema.lawQuestions.questionNumber);
+  }
+  
+  async getLawQuestion(id: number): Promise<schema.LawQuestion | undefined> {
+    const [question] = await db.select().from(schema.lawQuestions).where(eq(schema.lawQuestions.id, id));
+    return question;
+  }
+  
+  async updateLawQuestion(id: number, question: Partial<schema.InsertLawQuestion>): Promise<schema.LawQuestion> {
+    const [updatedQuestion] = await db.update(schema.lawQuestions)
+      .set({
+        ...question,
+        updatedAt: new Date()
+      })
+      .where(eq(schema.lawQuestions.id, id))
+      .returning();
+    
+    return updatedQuestion;
   }
 }
 
