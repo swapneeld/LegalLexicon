@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -9,12 +8,10 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { BookOpen, Gavel, HomeIcon, ScrollIcon, HeartHandshake, Building, FileText, AlertCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { getQueryFn } from '@/lib/queryClient';
-import { LawTopicsList } from '@/components/notes/LawNoteContent';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { BookOpen, Gavel, HomeIcon, ScrollIcon, HeartHandshake, Building, FileText, CheckSquare } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+
 
 // Semester 4 subjects as requested
 const SEMESTER_4_SUBJECTS = [
@@ -141,83 +138,102 @@ const NotesPage: React.FC = () => {
   // Find the active subject
   const activeSubject = SEMESTER_4_SUBJECTS.find(subject => subject.id === selectedSubject);
 
-  // Get courses to verify they exist
-  const { data: courses, isLoading: coursesLoading, error: coursesError } = useQuery({
-    queryKey: ['/api/law-courses'],
-    queryFn: getQueryFn({ on401: 'returnNull' })
-  });
-
-  // Initialize topic and question if we need to seed the database
-  const initializeContent = async () => {
-    // Only run this once and only for family law
-    if (initialized || selectedSubject !== 'family-law-2') return;
-
-    try {
-      // Check if we have topics for the family law course
-      const response = await fetch(`/api/law-courses/2/topics`);
-      const topics = await response.json();
-
-      // If no topics, create one
-      if (!topics || topics.length === 0) {
-        // First, make sure course exists
-        const courseExists = await fetch('/api/law-courses/2');
-        if (courseExists.status === 404) {
-          // Create the course
-          await fetch('/api/law-courses', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: 'Family Law II',
-              semester: 4,
-              description: 'Continue your study of family law with a focus on matrimonial rights, custody, and inheritance.',
-              isActive: true
-            })
-          });
-        }
-
-        // Create a topic
-        const topicResponse = await fetch('/api/law-topics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            courseId: 2,
-            name: 'Hindu Succession',
-            description: 'Rules and principles governing succession under Hindu Law',
-            orderIndex: 1,
-            isVisible: true
-          })
-        });
-
-        const topic = await topicResponse.json();
-        
-        // Create a question with our content
-        if (topic && topic.id) {
-          await fetch('/api/law-questions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              topicId: topic.id,
-              questionNumber: 1,
-              title: familyLawContent.title,
-              content: familyLawContent.content,
-              contentJson: familyLawContent,
-              isVisible: true
-            })
-          });
-        }
-      }
-      setInitialized(true);
-    } catch (err) {
-      console.error("Failed to initialize content:", err);
-    }
+  // Hardcoded content to display directly without API calls
+  const renderHardcodedContent = () => {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center">
+              <BookOpen className="h-5 w-5 mr-2" />
+              Hindu Succession
+            </CardTitle>
+            <CardDescription>Rules and principles governing succession under Hindu Law</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="1">
+                <AccordionTrigger className="text-left">
+                  <div className="flex items-start">
+                    <span className="font-medium">
+                      1. {familyLawContent.title}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-6">
+                    <div className="text-gray-700 mb-4">{familyLawContent.content}</div>
+                    
+                    {/* Synopsis */}
+                    {familyLawContent.synopsis && familyLawContent.synopsis.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-primary-dark mb-2 flex items-center">
+                          <CheckSquare className="h-4 w-4 mr-2" /> Synopsis
+                        </h4>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          {familyLawContent.synopsis.map((item, index) => (
+                            <li key={index}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Notes */}
+                    {familyLawContent.notes && familyLawContent.notes.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-primary-dark mb-4">Notes</h4>
+                        <div className="space-y-4">
+                          {familyLawContent.notes.map((note, index) => (
+                            <div key={index} className="bg-gray-50 p-4 rounded-md">
+                              <h5 className="font-medium text-gray-800 mb-2">{note.section}</h5>
+                              <div className="text-gray-700 whitespace-pre-line">{note.content}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Detailed Analysis */}
+                    {familyLawContent.detailedAnalysis && familyLawContent.detailedAnalysis.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="font-semibold text-primary-dark mb-4">Detailed Analysis</h4>
+                        <div className="space-y-4">
+                          {familyLawContent.detailedAnalysis.map((analysis, index) => (
+                            <div key={index}>
+                              <h5 className="font-medium text-gray-800 mb-2">{analysis.section}</h5>
+                              <div className="text-gray-700">{analysis.content}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Case Law References */}
+                    {familyLawContent.cases && familyLawContent.cases.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-primary-dark mb-3">Case References</h4>
+                        <div className="space-y-3">
+                          {familyLawContent.cases.map((caseRef, index) => (
+                            <div key={index} className="border border-gray-200 p-3 rounded-md">
+                              <h5 className="font-medium text-gray-800">{caseRef.name}</h5>
+                              <Badge variant="outline" className="mb-2">{caseRef.citation}</Badge>
+                              <p className="text-gray-700 text-sm">{caseRef.summary}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
-  // Call initialize function when we're on family law
-  useEffect(() => {
-    if (selectedSubject === 'family-law-2') {
-      initializeContent();
-    }
-  }, [selectedSubject]);
+  // No need to initialize content as we're using hardcoded data
 
   const handleSubjectChange = (subjectId: string) => {
     setSelectedSubject(subjectId);
@@ -304,8 +320,8 @@ const NotesPage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   {selectedSubject === 'family-law-2' ? (
-                    // For Family Law II, show the content from the database
-                    <LawTopicsList courseId={activeSubject.courseId.toString()} />
+                    // For Family Law II, show hardcoded content
+                    renderHardcodedContent()
                   ) : (
                     // For other subjects, show coming soon message
                     <div className="bg-gray-100 p-8 rounded-lg text-center">
