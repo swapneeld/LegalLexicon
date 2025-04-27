@@ -156,9 +156,17 @@ const TermDetails: React.FC = () => {
             <BookmarkPlus className="mr-1 h-4 w-4" />
             Save
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              const text = `*${term.term}*: ${term.definition}\n\nLearn more at LawLexicon!`;
+              const encodedText = encodeURIComponent(text);
+              window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+            }}
+          >
             <Share2 className="mr-1 h-4 w-4" />
-            Share
+            Share on WhatsApp
           </Button>
           <Button variant="outline" size="sm" className="text-red-500">
             <AlertTriangle className="mr-1 h-4 w-4" />

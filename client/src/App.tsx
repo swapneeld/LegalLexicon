@@ -5,7 +5,10 @@ import { Switch, Route, Link } from "wouter";
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import TermDetails from "@/pages/term-details";
+import SubmitPage from "@/pages/submit";
 import Footer from "@/components/layout/Footer";
+import { PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Header component
 function Header() {
@@ -15,8 +18,8 @@ function Header() {
         <Link href="/">
           <span className="text-2xl font-bold cursor-pointer">LawLexicon</span>
         </Link>
-        <nav>
-          <ul className="flex space-x-6">
+        <nav className="flex items-center">
+          <ul className="flex space-x-6 mr-4">
             <li>
               <Link href="/">
                 <span className="hover:text-primary-foreground/80 transition-colors cursor-pointer">Home</span>
@@ -28,6 +31,12 @@ function Header() {
               </Link>
             </li>
           </ul>
+          <Link href="/submit">
+            <Button variant="secondary" size="sm" className="hidden md:flex items-center">
+              <PlusCircle className="mr-1 h-4 w-4" />
+              Submit Term
+            </Button>
+          </Link>
         </nav>
       </div>
     </header>
@@ -45,6 +54,7 @@ function App() {
             <Route path="/" component={Home} />
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/term/:id" component={TermDetails} />
+            <Route path="/submit" component={SubmitPage} />
           </Switch>
         </main>
         <Footer />

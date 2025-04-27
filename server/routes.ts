@@ -26,7 +26,27 @@ declare module 'express-session' {
 export async function registerRoutes(app: Express): Promise<Server> {
   // API routes prefix
   const apiRouter = "/api";
-
+  
+  // Setup session middleware
+  const PgSession = connectPgSimple(session);
+  
+  app.use(
+    session({
+      store: new PgSession({
+        pool,
+        tableName: 'session', // Use default table name
+        createTableIfMissing: true,
+      }),
+      secret: process.env.SESSION_SECRET || 'lawlexicon-secret-key',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        secure: process.env.NODE_ENV === 'production',
+      },
+    })
+  );
+  
   // Error handler
   const handleError = (res: Response, err: any) => {
     console.error(err);
@@ -34,6 +54,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ message: fromZodError(err).message });
     }
     return res.status(500).json({ message: err.message || "Internal Server Error" });
+  };
+  
+  // Middleware to check if user is admin
+  const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session.adminUser) {
+      return res.status(401).json({ message: "Unauthorized - Admin access required" });
+    }
+    next();
   };
 
   // Terms endpoints
@@ -432,46 +460,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Users
-  app.post(`${apiRouter}/users`, async (req, res) => {
+  // Submissions endpoint
+  app.post(`${apiRouter}/submissions`, async (req, res) => {
     try {
-      const data = insertUserSchema.parse(req.body);
+      const data = insertSubmissionSchema.parse(req.body);
       
-      // Check if user already exists with this email
-      const existingUserByEmail = await storage.getUserByEmail(data.email);
-      if (existingUserByEmail) {
-        return res.status(400).json({ message: "User with this email already exists" });
-      }
-      
-      // Check if username is taken
-      if (data.username) {
-        const existingUserByUsername = await storage.getUserByUsername(data.username);
-        if (existingUserByUsername) {
-          return res.status(400).json({ message: "Username is already taken" });
-        }
-      }
-      
-      const user = await storage.createUser(data);
-      res.status(201).json(user);
+      // Create a submission
+      const submission = await storage.createSubmission(data);
+      res.status(201).json(submission);
     } catch (err) {
       handleError(res, err);
     }
   });
-
-  app.get(`${apiRouter}/users/auth/:provider/:authId`, async (req, res) => {
+  
+  app.get(`${apiRouter}/admin/submissions`, isAdmin, async (req, res) => {
     try {
-      const provider = req.params.provider;
-      const authId = req.params.authId;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const processed = req.query.processed === "true";
       
-      const user = await storage.getUserByAuthId(provider, authId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const result = await storage.getSubmissions({
+        page,
+        limit,
+        processed
+      });
       
-      res.json(user);
+      res.json(result);
     } catch (err) {
       handleError(res, err);
     }
+  });
+  
+  app.put(`${apiRouter}/admin/submissions/:id/approve`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const adminId = req.session.adminUser!.id;
+      
+      const success = await storage.approveSubmission(id, adminId);
+      if (!success) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/submissions/:id/reject`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const adminId = req.session.adminUser!.id;
+      
+      const success = await storage.rejectSubmission(id, adminId);
+      if (!success) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+  
+  // Admin authentication
+  app.post(`${apiRouter}/admin/login`, async (req, res) => {
+    try {
+      const { mobileNumber, password } = req.body;
+      
+      if (!mobileNumber || !password) {
+        return res.status(400).json({ message: "Mobile number and password are required" });
+      }
+      
+      const adminUser = await storage.verifyAdminLogin(mobileNumber, password);
+      if (!adminUser) {
+        return res.status(401).json({ message: "Invalid mobile number or password" });
+      }
+      
+      // Set session
+      req.session.adminUser = {
+        id: adminUser.id,
+        mobileNumber: adminUser.mobileNumber,
+        name: adminUser.name
+      };
+      
+      // Update last login time
+      await storage.updateAdminLastLogin(adminUser.id);
+      
+      res.json({
+        id: adminUser.id,
+        mobileNumber: adminUser.mobileNumber,
+        name: adminUser.name
+      });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+  
+  app.post(`${apiRouter}/admin/logout`, (req, res) => {
+    req.session.destroy(err => {
+      if (err) {
+        return handleError(res, err);
+      }
+      res.json({ success: true });
+    });
+  });
+  
+  app.get(`${apiRouter}/admin/me`, (req, res) => {
+    if (req.session.adminUser) {
+      return res.json(req.session.adminUser);
+    }
+    res.status(401).json({ message: "Not authenticated" });
   });
 
   const httpServer = createServer(app);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, PlusCircle, Share2 } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'wouter';
+import { toast } from '@/hooks/use-toast';
 
 // Sample legal terms data
 const sampleTerms = [
@@ -82,6 +83,14 @@ const categories = [
   'Trial Procedure'
 ];
 
+// Share term via WhatsApp
+const shareViaWhatsApp = (term: string, definition: string) => {
+  const text = `*${term}*: ${definition}\n\nLearn more legal terms at LawLexicon!`;
+  const encodedText = encodeURIComponent(text);
+  const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+  window.open(whatsappUrl, '_blank');
+};
+
 const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All Categories');
@@ -114,6 +123,16 @@ const Dashboard: React.FC = () => {
                 </Button>
               ))}
             </div>
+            
+            {/* Mobile Submit Button */}
+            <div className="mt-6 md:hidden">
+              <Link href="/submit">
+                <Button className="w-full flex items-center justify-center">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Submit a New Term
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
         
@@ -131,7 +150,7 @@ const Dashboard: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div>
+              <div className="flex justify-between items-center">
                 <p className="text-sm text-gray-500">
                   Showing {filteredTerms.length} of {sampleTerms.length} terms
                 </p>
@@ -159,10 +178,20 @@ const Dashboard: React.FC = () => {
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="border-t pt-4">
-                    <Link href={`/term/${term.id}`}>
-                      <Button variant="outline" className="w-full">View Details</Button>
-                    </Link>
+                  <CardFooter className="border-t pt-4 flex flex-col space-y-2">
+                    <div className="flex w-full gap-2">
+                      <Link href={`/term/${term.id}`} className="flex-1">
+                        <Button variant="outline" className="w-full">View Details</Button>
+                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => shareViaWhatsApp(term.term, term.definition)}
+                        title="Share via WhatsApp"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               ))
@@ -172,6 +201,19 @@ const Dashboard: React.FC = () => {
                 <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
               </div>
             )}
+          </div>
+          
+          {/* Submit Button - Desktop */}
+          <div className="hidden md:block mt-8 text-center">
+            <Link href="/submit">
+              <Button className="flex items-center">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Submit a New Term
+              </Button>
+            </Link>
+            <p className="text-sm text-gray-500 mt-2">
+              Help us grow our legal dictionary by contributing your knowledge.
+            </p>
           </div>
         </div>
       </div>
