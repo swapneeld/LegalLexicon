@@ -50,7 +50,14 @@ const sampleTerms = [
     definition: 'A legal doctrine that obligates courts to follow historical cases when making a ruling on a similar case.',
     category: 'Legal Principles',
     examples: [
-      'The Supreme Court relied on stare decisis when it upheld the precedent set in Roe v. Wade.'
+      {
+        text: 'The Supreme Court relied on stare decisis when it upheld the precedent set in Roe v. Wade.',
+        type: 'american'
+      },
+      {
+        text: 'In a landmark judgment, the Delhi High Court applied stare decisis to uphold the previous ruling on Fundamental Rights under Article 21.',
+        type: 'indian'
+      }
     ],
     cases: [
       {
@@ -66,7 +73,14 @@ const sampleTerms = [
     definition: 'The intention or knowledge of wrongdoing that constitutes part of a crime.',
     category: 'Criminal Law',
     examples: [
-      'The prosecution had to prove mens rea to establish that the defendant knowingly committed the crime.'
+      {
+        text: 'The prosecution had to prove mens rea to establish that the defendant knowingly committed the crime.',
+        type: 'american'
+      },
+      {
+        text: 'In the murder trial at Patiala House Court, the public prosecutor emphasized mens rea as a critical element in determining whether it was culpable homicide or murder.',
+        type: 'indian'
+      }
     ],
     cases: [
       {
@@ -82,7 +96,14 @@ const sampleTerms = [
     definition: 'A civil wrong that causes someone else to suffer loss or harm, resulting in legal liability for the person who commits the act.',
     category: 'Civil Law',
     examples: [
-      'The plaintiff filed a tort claim against the company for negligence that resulted in personal injury.'
+      {
+        text: 'The plaintiff filed a tort claim against the company for negligence that resulted in personal injury.',
+        type: 'american'
+      },
+      {
+        text: 'After the chemical factory leaked contaminants into the Yamuna River, villagers filed a tort case against the company in the Delhi High Court.',
+        type: 'indian'
+      }
     ],
     cases: [
       {
@@ -98,7 +119,14 @@ const sampleTerms = [
     definition: 'Professional work undertaken voluntarily and without payment as a public service.',
     category: 'Legal Practice',
     examples: [
-      'The attorney took the case pro bono because the client couldn\'t afford legal representation.'
+      {
+        text: 'The attorney took the case pro bono because the client couldn\'t afford legal representation.',
+        type: 'american'
+      },
+      {
+        text: 'The Legal Aid Society in Bangalore offers pro bono services to underprivileged communities facing housing disputes.',
+        type: 'indian'
+      }
     ],
     cases: []
   },
@@ -108,7 +136,14 @@ const sampleTerms = [
     definition: 'The preliminary examination of a witness or a juror to determine their competency to give or hear evidence.',
     category: 'Trial Procedure',
     examples: [
-      'During voir dire, the attorneys questioned potential jurors about their knowledge of the highly publicized case.'
+      {
+        text: 'During voir dire, the attorneys questioned potential jurors about their knowledge of the highly publicized case.',
+        type: 'american'
+      },
+      {
+        text: 'The Sessions Judge at Tis Hazari Courts conducted voir dire to assess if witnesses were influenced by media coverage of the high-profile corruption case.',
+        type: 'indian'
+      }
     ],
     cases: [
       {
@@ -214,25 +249,63 @@ const TermDetails: React.FC = () => {
                 <div>
                   <h3 className="text-xl font-medium mb-3">Examples</h3>
                   {term.examples.length > 0 ? (
-                    <ul className="space-y-4">
-                      {term.examples.map((example, index) => (
-                        <li key={index} className="border-l-4 border-primary/20 pl-4 py-2">
-                          <div className="flex justify-between">
-                            <p className="text-gray-700 italic">{example}</p>
-                            <div className="flex items-center gap-3 text-gray-500">
-                              <button className="flex items-center hover:text-primary">
-                                <ThumbsUp className="h-4 w-4 mr-1" />
-                                <span>12</span>
-                              </button>
-                              <button className="flex items-center hover:text-red-500">
-                                <ThumbsDown className="h-4 w-4 mr-1" />
-                                <span>3</span>
-                              </button>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="text-lg font-medium mb-2 text-primary flex items-center">
+                          <span className="inline-block w-6 h-6 bg-blue-100 text-blue-800 rounded-full mr-2 flex items-center justify-center text-xs font-bold">US</span>
+                          American Context
+                        </h4>
+                        <ul className="space-y-2">
+                          {term.examples
+                            .filter(ex => typeof ex === 'object' && ex.type === 'american')
+                            .map((example, index) => (
+                              <li key={`us-${index}`} className="border-l-4 border-blue-200 pl-4 py-2 bg-blue-50/30 rounded-r-md">
+                                <div className="flex justify-between">
+                                  <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>
+                                  <div className="flex items-center gap-3 text-gray-500">
+                                    <button className="flex items-center hover:text-primary">
+                                      <ThumbsUp className="h-4 w-4 mr-1" />
+                                      <span>12</span>
+                                    </button>
+                                    <button className="flex items-center hover:text-red-500">
+                                      <ThumbsDown className="h-4 w-4 mr-1" />
+                                      <span>3</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-lg font-medium mb-2 text-primary flex items-center">
+                          <span className="inline-block w-6 h-6 bg-orange-100 text-orange-800 rounded-full mr-2 flex items-center justify-center text-xs font-bold">IN</span>
+                          Indian Context
+                        </h4>
+                        <ul className="space-y-2">
+                          {term.examples
+                            .filter(ex => typeof ex === 'object' && ex.type === 'indian')
+                            .map((example, index) => (
+                              <li key={`in-${index}`} className="border-l-4 border-orange-200 pl-4 py-2 bg-orange-50/30 rounded-r-md">
+                                <div className="flex justify-between">
+                                  <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>
+                                  <div className="flex items-center gap-3 text-gray-500">
+                                    <button className="flex items-center hover:text-primary">
+                                      <ThumbsUp className="h-4 w-4 mr-1" />
+                                      <span>8</span>
+                                    </button>
+                                    <button className="flex items-center hover:text-red-500">
+                                      <ThumbsDown className="h-4 w-4 mr-1" />
+                                      <span>1</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    </div>
                   ) : (
                     <p className="text-gray-600">No examples available for this term.</p>
                   )}
