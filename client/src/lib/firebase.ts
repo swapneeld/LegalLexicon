@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider, 
   FacebookAuthProvider,
   signOut as firebaseSignOut,
@@ -17,6 +18,8 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  // Add these fields for more complete configuration
+  messagingSenderId: "000000000000", // Placeholder, not needed for auth
 };
 
 // Initialize Firebase
@@ -31,8 +34,9 @@ const facebookProvider = new FacebookAuthProvider();
 // Sign in with Google
 export const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+    // Using redirect instead of popup for better compatibility in Replit environment
+    await signInWithRedirect(auth, googleProvider);
+    // No return value since redirect will navigate away from the page
   } catch (error) {
     console.error("Error signing in with Google:", error);
     throw error;
