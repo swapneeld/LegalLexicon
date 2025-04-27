@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Switch, Route, Link } from "wouter";
@@ -30,6 +30,11 @@ function Header() {
                 <span className="hover:text-primary-foreground/80 transition-colors cursor-pointer">Dictionary</span>
               </Link>
             </li>
+            <li className="hidden md:block">
+              <Link href="/admin">
+                <span className="hover:text-primary-foreground/80 transition-colors cursor-pointer opacity-70">Admin</span>
+              </Link>
+            </li>
           </ul>
           <Link href="/submit">
             <Button variant="secondary" size="sm" className="hidden md:flex items-center">
@@ -55,6 +60,11 @@ function App() {
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/term/:id" component={TermDetails} />
             <Route path="/submit" component={SubmitPage} />
+            <Route path="/admin">
+              <Suspense fallback={<div className="p-8 text-center">Loading admin panel...</div>}>
+                {React.createElement(React.lazy(() => import('@/pages/admin')))}
+              </Suspense>
+            </Route>
           </Switch>
         </main>
         <Footer />
