@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Heart } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
@@ -9,22 +9,27 @@ const Footer: React.FC = () => {
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex justify-center md:justify-start space-x-6">
             <Link href="/about">
-              <a className="text-neutral-500 hover:text-neutral-900">About</a>
+              <span className="text-neutral-500 hover:text-neutral-900 cursor-pointer">About</span>
             </Link>
             <Link href="/terms">
-              <a className="text-neutral-500 hover:text-neutral-900">Terms</a>
+              <span className="text-neutral-500 hover:text-neutral-900 cursor-pointer">Terms</span>
             </Link>
             <Link href="/privacy">
-              <a className="text-neutral-500 hover:text-neutral-900">Privacy</a>
+              <span className="text-neutral-500 hover:text-neutral-900 cursor-pointer">Privacy</span>
             </Link>
             <Link href="/contact">
-              <a className="text-neutral-500 hover:text-neutral-900">Contact</a>
+              <span className="text-neutral-500 hover:text-neutral-900 cursor-pointer">Contact</span>
             </Link>
           </div>
           <div className="mt-8 md:mt-0">
-            <p className="text-center md:text-right text-base text-neutral-500">
-              &copy; {new Date().getFullYear()} LawLexicon. All rights reserved.
-            </p>
+            <div className="text-center md:text-right">
+              <p className="text-base text-neutral-500">
+                &copy; {new Date().getFullYear()} LawLexicon. All rights reserved.
+              </p>
+              <p className="text-sm text-neutral-500 flex items-center justify-center md:justify-end mt-1">
+                Created with <Heart className="h-4 w-4 mx-1 text-red-500 animate-pulse" /> from Latur
+              </p>
+            </div>
           </div>
         </div>
         <div className="mt-8 border-t border-neutral-200 pt-8 md:flex md:items-center md:justify-between">
