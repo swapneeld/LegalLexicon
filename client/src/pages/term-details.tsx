@@ -33,14 +33,19 @@ const sampleTerms = [
     ],
     cases: [
       {
-        name: 'Ex parte Milligan',
-        citation: '71 U.S. 2 (1866)',
-        summary: 'The U.S. Supreme Court ruled that the suspension of habeas corpus was lawful, but military trials of civilians were not constitutional when civilian courts were operational.'
+        name: 'A.K. Gopalan v. State of Madras',
+        citation: 'AIR 1950 SC 27',
+        summary: 'The Supreme Court of India held that Article A.21 providing for right to life and personal liberty has to be read separately and not as qualified by the provisions of Articles 14, 19 and 22 of the Constitution of India.'
       },
       {
-        name: 'Boumediene v. Bush',
-        citation: '553 U.S. 723 (2008)',
-        summary: 'The Supreme Court held that prisoners at Guantanamo Bay detention camp have a right to the habeas corpus privilege.'
+        name: 'ADM Jabalpur v. Shivakant Shukla',
+        citation: 'AIR 1976 SC 1207',
+        summary: 'Supreme Court ruled that the right to move any court for enforcement of Fundamental Rights, including right to habeas corpus, remains suspended during Emergency under Article 359 of the Constitution.'
+      },
+      {
+        name: 'Sunil Batra v. Delhi Administration',
+        citation: '(1978) 4 SCC 494',
+        summary: 'Supreme Court expanded the scope of habeas corpus to include protection against inhuman treatment of prisoners in jail and issued detailed guidelines for prison authorities.'
       }
     ]
   },
@@ -61,9 +66,14 @@ const sampleTerms = [
     ],
     cases: [
       {
-        name: 'Planned Parenthood v. Casey',
-        citation: '505 U.S. 833 (1992)',
-        summary: 'The Supreme Court reaffirmed the central holding of Roe v. Wade based on the principle of stare decisis.'
+        name: 'Kesavananda Bharati v. State of Kerala',
+        citation: '(1973) 4 SCC 225',
+        summary: 'The Supreme Court established the basic structure doctrine, applying stare decisis by reaffirming fundamental principles from Golaknath case while overruling specific elements.'
+      },
+      {
+        name: 'I.C. Golaknath v. State of Punjab',
+        citation: 'AIR 1967 SC 1643',
+        summary: 'Supreme Court upheld the precedent that Fundamental Rights cannot be amended by the Parliament, establishing an important legal principle using stare decisis.'
       }
     ]
   },
@@ -84,9 +94,19 @@ const sampleTerms = [
     ],
     cases: [
       {
-        name: 'Staples v. United States',
-        citation: '511 U.S. 600 (1994)',
-        summary: 'The Supreme Court held that the government must prove beyond a reasonable doubt that the defendant knew the weapon possessed the characteristics that brought it within the scope of the statute.'
+        name: 'Nathulal v. State of Madhya Pradesh',
+        citation: 'AIR 1966 SC 43',
+        summary: 'Supreme Court held that mens rea is an essential ingredient of any crime and cannot be dispensed with unless explicitly stated in the statute.'
+      },
+      {
+        name: 'Kartar Singh v. State of Punjab',
+        citation: '(1994) 3 SCC 569',
+        summary: 'Supreme Court ruled that in serious offenses like terrorism, proof of mens rea remains critical even for stringent laws like TADA.'
+      },
+      {
+        name: 'State of Maharashtra v. Mayor Hans George',
+        citation: 'AIR 1965 SC 722',
+        summary: 'Court held that certain statutory offenses might not require mens rea if the legislative intent clearly dispenses with it.'
       }
     ]
   },
@@ -107,9 +127,19 @@ const sampleTerms = [
     ],
     cases: [
       {
-        name: 'Palsgraf v. Long Island Railroad Co.',
-        citation: '248 N.Y. 339 (1928)',
-        summary: 'A landmark case establishing the principle of foreseeability in determining proximate cause and liability in tort law.'
+        name: 'M.C. Mehta v. Union of India',
+        citation: 'AIR 1987 SC 1086',
+        summary: 'Supreme Court established the principle of absolute liability in cases of hazardous industries, enhancing tort law without the exceptions available in Rylands v. Fletcher.'
+      },
+      {
+        name: 'Indian Council for Enviro-Legal Action v. Union of India',
+        citation: '(1996) 3 SCC 212',
+        summary: 'Supreme Court held that polluter pays principle is an essential feature of sustainable development, establishing important precedent in environmental tort law.'
+      },
+      {
+        name: 'Rajkot Municipal Corporation v. Manjulben Jayantilal Nakum',
+        citation: '(1997) 9 SCC 552',
+        summary: 'Supreme Court held that municipal corporations are liable under tort law for negligence in maintaining public infrastructure.'
       }
     ]
   },
@@ -147,9 +177,14 @@ const sampleTerms = [
     ],
     cases: [
       {
-        name: 'Batson v. Kentucky',
-        citation: '476 U.S. 79 (1986)',
-        summary: 'The Supreme Court ruled that prosecutors may not use peremptory challenges to dismiss jurors based solely on their race.'
+        name: 'State of Rajasthan v. Bhera',
+        citation: 'AIR 2001 SC 2548',
+        summary: 'Supreme Court emphasized the importance of proper voir dire examination to assess the credibility of child witnesses in criminal proceedings.'
+      },
+      {
+        name: 'Bipin Shantilal Panchal v. State of Gujarat',
+        citation: '(2001) 3 SCC 1',
+        summary: 'Supreme Court laid down detailed guidelines for examination and cross-examination of witnesses including voir dire examination.'
       }
     ]
   }

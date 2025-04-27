@@ -165,7 +165,9 @@ const Dashboard: React.FC = () => {
                 <Card key={term.id} className="h-full">
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl text-primary">{term.term}</CardTitle>
+                      <Link href={`/term/${term.id}`}>
+                        <CardTitle className="text-xl text-primary hover:underline cursor-pointer">{term.term}</CardTitle>
+                      </Link>
                       <Badge variant="outline">{term.category}</Badge>
                     </div>
                   </CardHeader>
