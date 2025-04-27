@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BookmarkPlus, Share2, ThumbsUp, ThumbsDown, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, BookmarkPlus, Share2, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -307,32 +307,7 @@ const TermDetails: React.FC = () => {
                                       </div>
                                       <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>
                                     </div>
-                                    <div className="flex items-center gap-3 text-gray-500 ml-4">
-                                      <button 
-                                        className="flex items-center hover:text-primary transition-colors"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          const count = e.currentTarget.querySelector('span');
-                                          if (count) count.textContent = (parseInt(count.textContent || '0') + 1).toString();
-                                          e.currentTarget.classList.add('text-primary');
-                                        }}
-                                      >
-                                        <ThumbsUp className="h-4 w-4 mr-1" />
-                                        <span>{isIndian ? '8' : '12'}</span>
-                                      </button>
-                                      <button 
-                                        className="flex items-center hover:text-red-500 transition-colors"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          const count = e.currentTarget.querySelector('span');
-                                          if (count) count.textContent = (parseInt(count.textContent || '0') + 1).toString();
-                                          e.currentTarget.classList.add('text-red-500');
-                                        }}
-                                      >
-                                        <ThumbsDown className="h-4 w-4 mr-1" />
-                                        <span>{isIndian ? '1' : '3'}</span>
-                                      </button>
-                                    </div>
+
                                   </div>
                                 </div>
                               </li>
