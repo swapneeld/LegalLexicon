@@ -213,26 +213,29 @@ export default function SubmissionForm({ onSuccess }: SubmissionFormProps) {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="example"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Example (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Provide an example of how this term is used..." 
-                        className="min-h-[80px]"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A real-world example helps others understand the term better.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4 pt-2 pb-2 rounded-md bg-gray-50 p-4 border border-gray-100">
+                <h4 className="text-sm font-medium text-gray-800">Examples (Optional but Recommended)</h4>
+                <FormField
+                  control={form.control}
+                  name="example"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Example Usage</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Provide an example of how this term is used. If possible, include examples with both Indian and American contexts for better understanding..." 
+                          className="min-h-[100px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Providing examples in different contexts (e.g., both Indian and American legal systems) helps readers understand the term's usage more comprehensively. Consider including both if applicable.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             
             {/* Case Reference Section */}

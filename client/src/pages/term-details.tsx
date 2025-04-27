@@ -250,61 +250,60 @@ const TermDetails: React.FC = () => {
                   <h3 className="text-xl font-medium mb-3">Examples</h3>
                   {term.examples.length > 0 ? (
                     <div className="space-y-6">
-                      <div>
-                        <h4 className="text-lg font-medium mb-2 text-primary flex items-center">
-                          <span className="inline-block w-6 h-6 bg-blue-100 text-blue-800 rounded-full mr-2 flex items-center justify-center text-xs font-bold">US</span>
-                          American Context
-                        </h4>
-                        <ul className="space-y-2">
-                          {term.examples
-                            .filter(ex => typeof ex === 'object' && ex.type === 'american')
-                            .map((example, index) => (
-                              <li key={`us-${index}`} className="border-l-4 border-blue-200 pl-4 py-2 bg-blue-50/30 rounded-r-md">
-                                <div className="flex justify-between">
-                                  <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>
-                                  <div className="flex items-center gap-3 text-gray-500">
-                                    <button className="flex items-center hover:text-primary">
-                                      <ThumbsUp className="h-4 w-4 mr-1" />
-                                      <span>12</span>
-                                    </button>
-                                    <button className="flex items-center hover:text-red-500">
-                                      <ThumbsDown className="h-4 w-4 mr-1" />
-                                      <span>3</span>
-                                    </button>
+                      <ul className="space-y-4">
+                        {term.examples
+                          .map((example, index) => {
+                            const isIndian = typeof example === 'object' && example.type === 'indian';
+                            return (
+                              <li 
+                                key={index} 
+                                className={`border-l-4 ${isIndian ? 'border-orange-200' : 'border-blue-200'} pl-4 py-3 ${isIndian ? 'bg-orange-50/20' : 'bg-blue-50/20'} rounded-r-md`}
+                              >
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex-1">
+                                      <div className="flex items-center mb-2">
+                                        <span className={`inline-block w-6 h-6 ${isIndian ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'} rounded-full mr-2 flex items-center justify-center text-xs font-bold`}>
+                                          {isIndian ? 'IN' : 'US'}
+                                        </span>
+                                        <span className="text-sm font-medium text-gray-600">
+                                          {isIndian ? 'Example (Indian context)' : 'Example (American context)'}
+                                        </span>
+                                      </div>
+                                      <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-gray-500 ml-4">
+                                      <button 
+                                        className="flex items-center hover:text-primary transition-colors"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          const count = e.currentTarget.querySelector('span');
+                                          if (count) count.textContent = (parseInt(count.textContent || '0') + 1).toString();
+                                          e.currentTarget.classList.add('text-primary');
+                                        }}
+                                      >
+                                        <ThumbsUp className="h-4 w-4 mr-1" />
+                                        <span>{isIndian ? '8' : '12'}</span>
+                                      </button>
+                                      <button 
+                                        className="flex items-center hover:text-red-500 transition-colors"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          const count = e.currentTarget.querySelector('span');
+                                          if (count) count.textContent = (parseInt(count.textContent || '0') + 1).toString();
+                                          e.currentTarget.classList.add('text-red-500');
+                                        }}
+                                      >
+                                        <ThumbsDown className="h-4 w-4 mr-1" />
+                                        <span>{isIndian ? '1' : '3'}</span>
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </li>
-                            ))}
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h4 className="text-lg font-medium mb-2 text-primary flex items-center">
-                          <span className="inline-block w-6 h-6 bg-orange-100 text-orange-800 rounded-full mr-2 flex items-center justify-center text-xs font-bold">IN</span>
-                          Indian Context
-                        </h4>
-                        <ul className="space-y-2">
-                          {term.examples
-                            .filter(ex => typeof ex === 'object' && ex.type === 'indian')
-                            .map((example, index) => (
-                              <li key={`in-${index}`} className="border-l-4 border-orange-200 pl-4 py-2 bg-orange-50/30 rounded-r-md">
-                                <div className="flex justify-between">
-                                  <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>
-                                  <div className="flex items-center gap-3 text-gray-500">
-                                    <button className="flex items-center hover:text-primary">
-                                      <ThumbsUp className="h-4 w-4 mr-1" />
-                                      <span>8</span>
-                                    </button>
-                                    <button className="flex items-center hover:text-red-500">
-                                      <ThumbsDown className="h-4 w-4 mr-1" />
-                                      <span>1</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              </li>
-                            ))}
-                        </ul>
-                      </div>
+                            );
+                          })}
+                      </ul>
                     </div>
                   ) : (
                     <p className="text-gray-600">No examples available for this term.</p>
