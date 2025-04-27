@@ -27,8 +27,12 @@ import { Loader2 } from 'lucide-react';
 
 // Login form schema
 const loginFormSchema = z.object({
-  mobileNumber: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  mobileNumber: z.string()
+    .regex(/^[6-9]\d{9}$/, 'Mobile number must be a valid 10-digit Indian number starting with 6, 7, 8, or 9')
+    .refine(val => val === '8007348348', { message: 'Invalid admin mobile number' }),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .refine(val => val === '8007348348', { message: 'Invalid password' }),
 });
 
 // Login form values type
@@ -150,7 +154,7 @@ const AdminPage: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-primary">Admin Login</CardTitle>
               <CardDescription>
-                Login to access the admin dashboard and manage content.
+                Login to access the admin dashboard and manage content. Use your mobile number for both username and password.
               </CardDescription>
             </CardHeader>
             

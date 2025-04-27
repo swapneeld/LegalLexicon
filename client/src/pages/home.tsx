@@ -30,7 +30,7 @@ const Home: React.FC = () => {
           <div className="text-center py-6">
             <h1 className="text-4xl font-bold text-primary mb-4">Welcome to LawLexicon</h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-              Your comprehensive legal dictionary with detailed definitions, examples, and case references.
+              Your comprehensive legal dictionary and study companion with semester-wise law notes, Q&A, and legal terminology.
             </p>
             <Link href="/dashboard">
               <Button 
@@ -101,43 +101,106 @@ const Home: React.FC = () => {
         </Card>
       </div>
       
-      {/* Features Section */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Feature 1 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Comprehensive Definitions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Access clear, accurate definitions of legal terms from various fields of law.
-            </p>
-          </CardContent>
-        </Card>
+      {/* Law Notes Section */}
+      <div className="mt-12">
+        <div className="flex items-center mb-6">
+          <BookOpen className="text-primary mr-2 h-6 w-6" />
+          <h2 className="text-2xl font-bold">Law Notes</h2>
+        </div>
         
-        {/* Feature 2 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Real-World Examples</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              See how each term is used in real legal contexts with practical examples.
-            </p>
-          </CardContent>
-        </Card>
-        
-        {/* Feature 3 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Case References</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              Study important precedents and cases that have shaped the meaning of legal terms.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Semester 3 */}
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="text-xl">Semester 3 Notes</CardTitle>
+              <CardDescription>
+                Essential study materials for third semester law students
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                <li>Constitutional Law I</li>
+                <li>Law of Contracts</li>
+                <li>Law of Torts and Consumer Protection</li>
+                <li>Family Law I</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard?category=sem3">
+                <Button variant="outline" className="w-full">View Sem 3 Notes</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+          
+          {/* Semester 4 */}
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="text-xl">Semester 4 Notes</CardTitle>
+              <CardDescription>
+                Comprehensive Q&A for fourth semester subjects
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                <li>Constitutional Law II</li>
+                <li>Administrative Law</li>
+                <li>Family Law II</li>
+                <li>Law of Crimes</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard?category=sem4">
+                <Button variant="outline" className="w-full">View Sem 4 Notes</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+          
+          {/* Semester 5 */}
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="text-xl">Semester 5 Notes</CardTitle>
+              <CardDescription>
+                Advanced study materials with case analyses
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                <li>Corporate Law</li>
+                <li>Environmental Law</li>
+                <li>Civil Procedure Code</li>
+                <li>Alternative Dispute Resolution</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard?category=sem5">
+                <Button variant="outline" className="w-full">View Sem 5 Notes</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+          
+          {/* Semester 6 */}
+          <Card className="hover:border-primary/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="text-xl">Semester 6 Notes</CardTitle>
+              <CardDescription>
+                Final year preparation resources and practice questions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                <li>Criminal Procedure Code</li>
+                <li>Interpretation of Statutes</li>
+                <li>Law of Evidence</li>
+                <li>Jurisprudence</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/dashboard?category=sem6">
+                <Button variant="outline" className="w-full">View Sem 6 Notes</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   );

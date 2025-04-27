@@ -30,7 +30,28 @@ const submissionFormSchema = z.object({
   caseCitation: z.string().optional(),
   caseDescription: z.string().optional(),
   submitterName: z.string().optional(),
-  submitterMobile: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
+  submitterMobile: z.string()
+    .regex(/^[6-9]\d{9}$/, 'Mobile number must be a valid 10-digit Indian number starting with 6, 7, 8, or 9')
+    .refine(
+      (val) => {
+        // Check for repetitive patterns
+        if (/^(\d)\1+$/.test(val)) return false; // Same digit repeated (e.g., 9999999999)
+        if (/^(\d{2})\1+$/.test(val)) return false; // Same 2-digit pattern repeated (e.g., 9090909090)
+        if (/^(\d{3})\1+$/.test(val)) return false; // Same 3-digit pattern repeated (e.g., 9879879879)
+        if (/^(\d{4})\1+$/.test(val)) return false; // Same 4-digit pattern repeated (e.g., 9876987698)
+        if (/^(\d{5})\1+$/.test(val)) return false; // Same 5-digit pattern repeated (e.g., 9876598765)
+        
+        // Check for sequential patterns
+        const sequential = "0123456789";
+        const reverseSequential = "9876543210";
+        if (sequential.includes(val) || reverseSequential.includes(val)) return false;
+        
+        return true;
+      },
+      {
+        message: 'Please enter a valid mobile number. Sequential or repetitive numbers are not allowed.'
+      }
+    ),
   submitterCity: z.string().optional(),
 });
 
