@@ -71,8 +71,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const approved = req.query.approved === undefined ? true : req.query.approved === "true";
+      const category = req.query.category as string;
 
-      const terms = await storage.getAllTerms(page, limit, approved);
+      const terms = await storage.getTerms({
+        page,
+        limit,
+        category,
+        approved
+      });
       res.json(terms);
     } catch (err) {
       handleError(res, err);
@@ -505,6 +511,190 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Law Notes endpoints
+  // Law Courses
+  app.get(`${apiRouter}/law-courses`, async (req, res) => {
+    try {
+      const semester = req.query.semester ? parseInt(req.query.semester as string) : undefined;
+      const active = req.query.active === undefined ? true : req.query.active === "true";
+      
+      const courses = await storage.getLawCourses({ semester, active });
+      res.json(courses);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.get(`${apiRouter}/law-courses/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const course = await storage.getLawCourse(id);
+      
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      
+      res.json(course);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.post(`${apiRouter}/law-courses`, isAdmin, async (req, res) => {
+    try {
+      const data = insertLawCourseSchema.parse(req.body);
+      const adminId = req.session.adminUser!.id;
+      
+      const course = await storage.createLawCourse({
+        ...data,
+        createdBy: adminId
+      });
+      
+      res.status(201).json(course);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.put(`${apiRouter}/law-courses/:id`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertLawCourseSchema.partial().parse(req.body);
+      
+      const course = await storage.updateLawCourse(id, data);
+      
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      
+      res.json(course);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // Law Topics
+  app.get(`${apiRouter}/law-courses/:courseId/topics`, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const visible = req.query.visible === undefined ? true : req.query.visible === "true";
+      
+      const topics = await storage.getLawTopics(courseId, { visible });
+      res.json(topics);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.get(`${apiRouter}/law-topics/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const topic = await storage.getLawTopic(id);
+      
+      if (!topic) {
+        return res.status(404).json({ message: "Topic not found" });
+      }
+      
+      res.json(topic);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.post(`${apiRouter}/law-topics`, isAdmin, async (req, res) => {
+    try {
+      const data = insertLawTopicSchema.parse(req.body);
+      const adminId = req.session.adminUser!.id;
+      
+      const topic = await storage.createLawTopic({
+        ...data,
+        createdBy: adminId
+      });
+      
+      res.status(201).json(topic);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.put(`${apiRouter}/law-topics/:id`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertLawTopicSchema.partial().parse(req.body);
+      
+      const topic = await storage.updateLawTopic(id, data);
+      
+      if (!topic) {
+        return res.status(404).json({ message: "Topic not found" });
+      }
+      
+      res.json(topic);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // Law Questions
+  app.get(`${apiRouter}/law-topics/:topicId/questions`, async (req, res) => {
+    try {
+      const topicId = parseInt(req.params.topicId);
+      const visible = req.query.visible === undefined ? true : req.query.visible === "true";
+      
+      const questions = await storage.getLawQuestions(topicId, { visible });
+      res.json(questions);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.get(`${apiRouter}/law-questions/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const question = await storage.getLawQuestion(id);
+      
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      
+      res.json(question);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.post(`${apiRouter}/law-questions`, isAdmin, async (req, res) => {
+    try {
+      const data = insertLawQuestionSchema.parse(req.body);
+      const adminId = req.session.adminUser!.id;
+      
+      const question = await storage.createLawQuestion({
+        ...data,
+        createdBy: adminId
+      });
+      
+      res.status(201).json(question);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  app.put(`${apiRouter}/law-questions/:id`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertLawQuestionSchema.partial().parse(req.body);
+      
+      const question = await storage.updateLawQuestion(id, data);
+      
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      
+      res.json(question);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
   // Admin authentication
   app.post(`${apiRouter}/admin/login`, async (req, res) => {
     try {
