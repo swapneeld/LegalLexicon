@@ -23,7 +23,168 @@ import {
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UsersRound, MonitorSmartphone, TabletSmartphone, Smartphone } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+// Visitor Statistics Component
+type VisitorStats = {
+  total: number;
+  today: number;
+  lastWeek: number;
+  byPath: { path: string; count: number }[];
+  byDevice: { deviceType: string; count: number }[];
+};
+
+const VisitorStatistics = () => {
+  // Fetch visitor statistics
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['/api/visitor-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/visitor-stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch visitor statistics');
+      }
+      return response.json() as Promise<VisitorStats>;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <p>Error loading visitor statistics. Please try again.</p>
+      </div>
+    );
+  }
+
+  // Get device icon based on type
+  const getDeviceIcon = (type: string) => {
+    switch(type.toLowerCase()) {
+      case 'desktop':
+        return <MonitorSmartphone className="w-5 h-5" />;
+      case 'tablet':
+        return <TabletSmartphone className="w-5 h-5" />;
+      case 'mobile':
+        return <Smartphone className="w-5 h-5" />;
+      default:
+        return <UsersRound className="w-5 h-5" />;
+    }
+  };
+
+  return (
+    <div>
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Total Visitors</p>
+                <p className="text-3xl font-bold">{data.total}</p>
+              </div>
+              <div className="bg-primary/10 p-3 rounded-full">
+                <UsersRound className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Today's Visitors</p>
+                <p className="text-3xl font-bold">{data.today}</p>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-full">
+                <UsersRound className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Last 7 Days</p>
+                <p className="text-3xl font-bold">{data.lastWeek}</p>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-full">
+                <UsersRound className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Path Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Popular Pages */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Popular Pages</CardTitle>
+            <CardDescription>The most visited pages on your website</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {data.byPath.length > 0 ? (
+                data.byPath.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="font-medium truncate max-w-[200px]">
+                        {item.path === '/' ? 'Home Page' : item.path}
+                      </span>
+                    </div>
+                    <span className="bg-primary/10 px-2 py-1 rounded text-sm font-medium">
+                      {item.count} {item.count === 1 ? 'visit' : 'visits'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">No page visit data available yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Device Types */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Device Types</CardTitle>
+            <CardDescription>What devices your visitors are using</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {data.byDevice.length > 0 ? (
+                data.byDevice.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getDeviceIcon(item.deviceType)}
+                      <span className="font-medium capitalize">{item.deviceType}</span>
+                    </div>
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                      {item.count} {item.count === 1 ? 'visit' : 'visits'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">No device data available yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
 
 // Login form schema
 const loginFormSchema = z.object({
@@ -36,7 +197,10 @@ const loginFormSchema = z.object({
 });
 
 // Login form values type
-type LoginFormValues = z.infer<typeof loginFormSchema>;
+type LoginFormValues = {
+  mobileNumber: string;
+  password: string;
+};
 
 const AdminPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -244,11 +408,12 @@ const AdminPage: React.FC = () => {
       </div>
       
       <div className="bg-white rounded-lg shadow">
-        <Tabs defaultValue="submissions" className="w-full">
+        <Tabs defaultValue="statistics" className="w-full">
           <TabsList className="w-full border-b">
             <TabsTrigger value="submissions" className="flex-1">Submissions</TabsTrigger>
             <TabsTrigger value="pending-terms" className="flex-1">Pending Terms</TabsTrigger>
-            <TabsTrigger value="reports" className="flex-1">Reports</TabsTrigger>
+            <TabsTrigger value="statistics" className="flex-1">Visitor Stats</TabsTrigger>
+            <TabsTrigger value="notes" className="flex-1">Law Notes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="submissions" className="p-6">
@@ -273,14 +438,23 @@ const AdminPage: React.FC = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="reports" className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Reports</h2>
+          <TabsContent value="statistics" className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Visitor Statistics</h2>
+            <p className="text-gray-500 mb-6">
+              Track user engagement and monitor traffic to your dictionary.
+            </p>
+            
+            <VisitorStatistics />
+          </TabsContent>
+          
+          <TabsContent value="notes" className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Law Notes Management</h2>
             <p className="text-gray-500">
-              Manage user reports for inappropriate content.
+              Manage semester-wise law notes content.
             </p>
             
             <div className="mt-6 text-center">
-              <p>Reports functionality will be implemented soon.</p>
+              <p>Law notes management functionality will be implemented soon.</p>
             </div>
           </TabsContent>
         </Tabs>
