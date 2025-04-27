@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Switch, Route } from "wouter";
@@ -6,10 +7,12 @@ import Footer from "@/components/layout/Footer";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AuthModal from "@/components/auth/AuthModal";
 
 // Header component with auth controls
 function Header() {
-  const { user, loading, signIn, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
   return (
     <header>
@@ -38,7 +41,7 @@ function Header() {
           ) : (
             <Button 
               variant="secondary" 
-              onClick={() => signIn()}
+              onClick={() => setShowAuthModal(true)}
               className="text-primary"
             >
               Sign In
@@ -46,6 +49,9 @@ function Header() {
           )}
         </div>
       </div>
+      
+      {/* Auth Modal */}
+      <AuthModal open={showAuthModal} setOpen={setShowAuthModal} />
     </header>
   );
 }
