@@ -530,7 +530,7 @@ const TermsManagement = () => {
         params.append('search', searchTerm);
       }
       
-      if (category) {
+      if (category && category !== 'all') {
         params.append('category', category);
       }
       
@@ -586,7 +586,7 @@ const TermsManagement = () => {
   
   // Categories for filtering
   const categories = [
-    { label: 'All Categories', value: '' },
+    { label: 'All Categories', value: 'all' },
     { label: 'Constitutional', value: 'Constitutional' },
     { label: 'Criminal', value: 'Criminal' },
     { label: 'Civil', value: 'Civil' },
