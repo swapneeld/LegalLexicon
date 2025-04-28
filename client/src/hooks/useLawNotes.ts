@@ -87,13 +87,7 @@ export function useLawNotes() {
   // Create a new law course (admin only)
   const createLawCourse = useMutation({
     mutationFn: (course: InsertLawCourse) => 
-      apiRequest('/api/law-courses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(course),
-      }),
+      apiRequest('/api/law-courses', course),
     onSuccess: () => {
       toast({
         title: 'Course created',
@@ -113,13 +107,7 @@ export function useLawNotes() {
   // Update a law course (admin only)
   const updateLawCourse = useMutation({
     mutationFn: ({ id, data }: { id: number, data: Partial<InsertLawCourse> }) => 
-      apiRequest(`/api/law-courses/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      }),
+      apiRequest(`/api/law-courses/${id}`, data, 'PUT'),
     onSuccess: (_, variables) => {
       toast({
         title: 'Course updated',
@@ -140,13 +128,7 @@ export function useLawNotes() {
   // Create a new law topic (admin only)
   const createLawTopic = useMutation({
     mutationFn: (topic: InsertLawTopic) => 
-      apiRequest('/api/law-topics', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(topic),
-      }),
+      apiRequest('/api/law-topics', topic),
     onSuccess: (_, variables) => {
       toast({
         title: 'Topic created',
@@ -166,13 +148,7 @@ export function useLawNotes() {
   // Update a law topic (admin only)
   const updateLawTopic = useMutation({
     mutationFn: ({ id, data }: { id: number, data: Partial<InsertLawTopic> }) => 
-      apiRequest(`/api/law-topics/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      }),
+      apiRequest(`/api/law-topics/${id}`, data, 'PUT'),
     onSuccess: (_, variables) => {
       toast({
         title: 'Topic updated',
@@ -193,13 +169,7 @@ export function useLawNotes() {
   // Create a new law question (admin only)
   const createLawQuestion = useMutation({
     mutationFn: (question: InsertLawQuestion) => 
-      apiRequest('/api/law-questions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(question),
-      }),
+      apiRequest('/api/law-questions', question),
     onSuccess: (_, variables) => {
       toast({
         title: 'Question created',
@@ -219,13 +189,7 @@ export function useLawNotes() {
   // Update a law question (admin only)
   const updateLawQuestion = useMutation({
     mutationFn: ({ id, data }: { id: number, data: Partial<InsertLawQuestion> }) => 
-      apiRequest(`/api/law-questions/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      }),
+      apiRequest(`/api/law-questions/${id}`, data, 'PUT'),
     onSuccess: (_, variables) => {
       toast({
         title: 'Question updated',
