@@ -54,9 +54,9 @@ const SubmissionsReview = () => {
   
   // Fetch submissions
   const { data, isLoading, isError } = useQuery<{ submissions: Submission[], total: number }>({
-    queryKey: ['/api/submissions'],
+    queryKey: ['/api/admin/submissions'],
     queryFn: async () => {
-      const response = await fetch('/api/submissions?processed=false&page=1&limit=50');
+      const response = await fetch('/api/admin/submissions?processed=false&page=1&limit=50');
       if (!response.ok) {
         throw new Error('Failed to fetch submissions');
       }
@@ -66,9 +66,9 @@ const SubmissionsReview = () => {
   
   // Approve submission mutation
   const approveMutation = useMutation({
-    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/approve/submission/${id}`, {}),
+    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/submissions/${id}/approve`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/submissions'] });
       toast({
         title: 'Submission approved',
         description: 'The term submission has been approved and added to the dictionary.',
@@ -86,9 +86,9 @@ const SubmissionsReview = () => {
   
   // Reject submission mutation
   const rejectMutation = useMutation({
-    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/reject/submission/${id}`, {}),
+    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/submissions/${id}/reject`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/submissions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/submissions'] });
       toast({
         title: 'Submission rejected',
         description: 'The term submission has been rejected.',
