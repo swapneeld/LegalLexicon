@@ -22,6 +22,8 @@ export interface IStorage {
   }): Promise<{ terms: schema.Term[]; total: number }>;
   getWordOfTheDay(): Promise<schema.Term | undefined>;
   getCasesByTermId(termId: number, approved?: boolean): Promise<schema.Case[]>;
+  deleteTermById(id: number): Promise<boolean>;
+  updateTerm(id: number, termData: Partial<schema.InsertTerm>): Promise<schema.Term | undefined>;
   
   // Submission operations
   createSubmission(submission: schema.InsertSubmission): Promise<schema.Submission>;
