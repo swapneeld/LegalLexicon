@@ -48,8 +48,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import TermsManagement from '@/components/admin/TermsManagement';
-import VisitorStatistics from '@/components/admin/VisitorStatistics';
 import LawNotesManager from '@/components/admin/LawNotesManager';
 import {
   Select,
