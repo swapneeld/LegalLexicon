@@ -6,7 +6,7 @@ import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import TermDetails from "@/pages/term-details";
 import SubmitPage from "@/pages/submit";
-import NotesPage from "@/pages/notes";
+import NotesPage from "@/pages/notes-dynamic"; // Using the dynamic notes page
 import AboutPage from "@/pages/about";
 import Footer from "@/components/layout/Footer";
 import { PlusCircle } from "lucide-react";
