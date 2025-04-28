@@ -298,11 +298,11 @@ const TermDetails: React.FC = () => {
                                   <div className="flex justify-between items-start">
                                     <div className="flex-1">
                                       <div className="flex items-center mb-2">
-                                        <span className={`inline-block w-6 h-6 ${isIndian ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'} rounded-full mr-2 flex items-center justify-center text-xs font-bold`}>
-                                          {isIndian ? 'IN' : 'US'}
+                                        <span className={`inline-block w-6 h-6 bg-primary-50 text-primary-800 rounded-full mr-2 flex items-center justify-center text-xs font-bold`}>
+                                          {index + 1}
                                         </span>
                                         <span className="text-sm font-medium text-gray-600">
-                                          {isIndian ? 'Example (Indian context)' : 'Example (American context)'}
+                                          Example {index + 1}
                                         </span>
                                       </div>
                                       <p className="text-gray-700 italic">{typeof example === 'object' ? example.text : example}</p>

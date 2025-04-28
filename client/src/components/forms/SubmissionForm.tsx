@@ -223,13 +223,13 @@ export default function SubmissionForm({ onSuccess }: SubmissionFormProps) {
                       <FormLabel>Example Usage</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Provide an example of how this term is used. If possible, include examples with both Indian and American contexts for better understanding..." 
+                          placeholder="Provide examples of how this term is used in the legal context. Multiple examples help better understanding..." 
                           className="min-h-[100px]"
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        Providing examples in different contexts (e.g., both Indian and American legal systems) helps readers understand the term's usage more comprehensively. Consider including both if applicable.
+                        Providing multiple examples helps readers understand the term's usage more comprehensively. Consider including at least two examples if possible.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
