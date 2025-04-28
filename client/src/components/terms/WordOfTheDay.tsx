@@ -1,12 +1,9 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Bookmark, Share, Flag } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
-import { useFavorites } from '@/hooks/useFavorites';
-import AuthModal from '@/components/auth/AuthModal';
+import { Badge } from '@/components/ui/badge';
 import { Term, Case } from '@shared/schema';
 
 interface WordOfTheDayProps {
@@ -15,25 +12,6 @@ interface WordOfTheDayProps {
 }
 
 const WordOfTheDay: React.FC<WordOfTheDayProps> = ({ term, isLoading }) => {
-  const { isAuthenticated } = useAuth();
-  const { useIsFavorite, useToggleFavorite } = useFavorites();
-  const [showAuthModal, setShowAuthModal] = React.useState(false);
-  
-  const { data: favoriteData } = useIsFavorite(term?.id || 0);
-  const isFavorite = favoriteData?.isFavorite || false;
-  
-  const toggleFavoriteMutation = useToggleFavorite();
-  
-  const handleToggleFavorite = () => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-      return;
-    }
-    
-    if (term) {
-      toggleFavoriteMutation.mutate({ termId: term.id, isFavorite });
-    }
-  };
   
   if (isLoading) {
     return (
@@ -80,97 +58,47 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({ term, isLoading }) => {
   }
 
   return (
-    <>
-      <div className="text-center mb-6">
-        <h2 className="text-lg text-primary font-medium uppercase tracking-wider mb-1">Word of the Day</h2>
-        <div className="w-16 h-1 bg-secondary mx-auto"></div>
-      </div>
-      
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-gradient-to-r from-primary-light to-primary p-6 rounded-t-lg text-white">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-serif font-bold">{term.term}</h1>
-            <div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:text-secondary focus:outline-none transition duration-150"
-                onClick={handleToggleFavorite}
-              >
-                <Bookmark className={cn("h-6 w-6", isFavorite && "fill-current text-secondary")} />
-              </Button>
-            </div>
-          </div>
-          {term.origin && <p className="italic text-neutral-200 mt-1">[{term.origin}]</p>}
-        </div>
-        
-        <div className="border-l border-r border-neutral-200 p-6 bg-white">
-          <h3 className="text-lg font-medium text-neutral-900 mb-2">Definition</h3>
-          <p className="text-neutral-700 mb-4">{term.definition}</p>
-          
-          {term.example && (
-            <>
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">Example</h3>
-              <p className="text-neutral-700 bg-neutral-50 p-4 rounded-md mb-4 border-l-4 border-primary">
-                "{term.example}"
-              </p>
-            </>
-          )}
-          
-          {term.cases && term.cases.length > 0 && (
-            <>
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">Landmark Case</h3>
-              <div className="bg-neutral-50 p-4 rounded-md border border-neutral-200">
-                <h4 className="font-medium text-primary-dark">
-                  {term.cases[0].caseName} {term.cases[0].year && `(${term.cases[0].year})`}
-                </h4>
-                <p className="text-neutral-700 mt-1">{term.cases[0].description}</p>
-              </div>
-            </>
-          )}
-        </div>
-        
-        <div className="border border-neutral-200 rounded-b-lg bg-neutral-50 p-4 flex justify-between items-center">
+    <Card className="max-w-3xl mx-auto">
+      <CardHeader className="bg-gradient-to-r from-primary-light to-primary text-white rounded-t-lg">
+        <div className="flex justify-between items-center">
           <div>
-            <span className="text-sm text-neutral-500">
-              Added: {new Date(term.createdAt).toLocaleDateString()}
-            </span>
+            <CardTitle className="text-3xl font-serif font-bold">{term.term}</CardTitle>
+            {term.origin && <p className="italic text-neutral-200 mt-1">[{term.origin}]</p>}
           </div>
-          <div className="flex space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-neutral-500 hover:text-primary"
-              onClick={() => {
-                if (!isAuthenticated) {
-                  setShowAuthModal(true);
-                  return;
-                }
-                // Handle share functionality
-              }}
-            >
-              <Share className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-neutral-500 hover:text-destructive"
-              onClick={() => {
-                if (!isAuthenticated) {
-                  setShowAuthModal(true);
-                  return;
-                }
-                // Handle report functionality
-              }}
-            >
-              <Flag className="h-5 w-5" />
-            </Button>
-          </div>
+          <Badge variant="secondary">{term.category}</Badge>
         </div>
-      </div>
+      </CardHeader>
       
-      <AuthModal open={showAuthModal} setOpen={setShowAuthModal} />
-    </>
+      <CardContent className="pt-6">
+        <h3 className="text-lg font-medium text-neutral-900 mb-2">Definition</h3>
+        <p className="text-neutral-700 mb-6">{term.definition}</p>
+        
+        {term.example && (
+          <>
+            <h3 className="text-lg font-medium text-neutral-900 mb-2">Example</h3>
+            <p className="text-neutral-700 bg-neutral-50 p-4 rounded-md mb-6 border-l-4 border-primary">
+              "{term.example}"
+            </p>
+          </>
+        )}
+        
+        {term.cases && term.cases.length > 0 && (
+          <>
+            <h3 className="text-lg font-medium text-neutral-900 mb-2">Landmark Case</h3>
+            <div className="bg-neutral-50 p-4 rounded-md border border-neutral-200 mb-4">
+              <h4 className="font-medium text-primary-dark">
+                {term.cases[0].caseName} {term.cases[0].year && `(${term.cases[0].year})`}
+              </h4>
+              <p className="text-neutral-700 mt-1">{term.cases[0].description}</p>
+            </div>
+          </>
+        )}
+      </CardContent>
+      
+      <CardFooter className="bg-neutral-50 text-sm text-neutral-500 py-4 border-t">
+        Added: {new Date(term.createdAt).toLocaleDateString()}
+      </CardFooter>
+    </Card>
   );
 };
 

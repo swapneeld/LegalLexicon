@@ -4,8 +4,7 @@ import {
   signInWithEmail,
   registerWithEmail,
   signOut as mockSignOut,
-  onAuthStateChanged,
-  auth
+  onAuthStateChanged
 } from '@/lib/mockAuth';
 
 // Define the shape of our auth context
@@ -23,24 +22,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Create the provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Set up auth state listener on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (firebaseUser) => {
-        setUser(firebaseUser);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Auth state change error:', error);
-        setError(error.message);
-        setLoading(false);
-      }
-    );
+    const unsubscribe = onAuthStateChanged((mockUser) => {
+      setUser(mockUser);
+      setLoading(false);
+    });
 
     // Clean up subscription on unmount
     return () => unsubscribe();
@@ -94,7 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signOut = async () => {
     try {
       setLoading(true);
-      await firebaseSignOut();
+      await mockSignOut();
       setError(null);
     } catch (error) {
       console.error('Sign out error:', error);

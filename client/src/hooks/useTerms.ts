@@ -9,7 +9,7 @@ export function useTerms() {
 
   // Get all terms (paginated)
   const useAllTerms = (page: number = 1, limit: number = 10, approved: boolean = true) => {
-    return useQuery<Term[]>({
+    return useQuery<{ terms: Term[]; total: number }>({
       queryKey: ['/api/terms', page, limit, approved],
       queryFn: () => 
         fetch(`/api/terms?page=${page}&limit=${limit}&approved=${approved}`)

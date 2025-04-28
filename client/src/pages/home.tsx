@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BookOpen, Calendar, Award } from 'lucide-react';
+import { ArrowRight, BookOpen, Award } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -10,15 +10,32 @@ import {
   CardDescription,
   CardFooter
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import WordOfTheDay from '@/components/terms/WordOfTheDay';
+import { useTerms } from '@/hooks/useTerms';
 
-// Word of the day definition
-const wordOfTheDay = {
-  term: 'Habeas Corpus',
-  definition: 'A legal action or writ by which detainees can seek relief from unlawful imprisonment. Latin for "you shall have the body."',
-  category: 'Constitutional Law',
-  example: 'The defendant filed a petition for habeas corpus after claiming his constitutional rights were violated during the trial.',
-  caseReference: 'Ex parte Milligan, 71 U.S. 2 (1866)'
+// Word of the Day section with real data
+const WordOfTheDaySection = () => {
+  const { useWordOfTheDay } = useTerms();
+  const { data: term, isLoading } = useWordOfTheDay();
+  
+  return (
+    <>
+      <div className="flex items-center mb-6">
+        <Award className="text-primary mr-2 h-6 w-6" />
+        <h2 className="text-2xl font-bold">Word of the Day</h2>
+      </div>
+      
+      <WordOfTheDay term={term} isLoading={isLoading} />
+      
+      <div className="mt-4 text-center">
+        <Link href="/dashboard">
+          <Button variant="outline">
+            Explore More Legal Terms
+          </Button>
+        </Link>
+      </div>
+    </>
+  );
 };
 
 const Home: React.FC = () => {
@@ -49,56 +66,7 @@ const Home: React.FC = () => {
       
       {/* Word of the Day Section */}
       <div className="mt-12">
-        <div className="flex items-center mb-6">
-          <Award className="text-primary mr-2 h-6 w-6" />
-          <h2 className="text-2xl font-bold">Word of the Day</h2>
-        </div>
-        
-        <Card className="border-2 border-primary/20">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <Calendar className="text-gray-400 h-4 w-4" />
-                  <span className="text-sm text-gray-500">{new Date().toLocaleDateString()}</span>
-                </div>
-                <CardTitle className="text-3xl text-primary">{wordOfTheDay.term}</CardTitle>
-              </div>
-              <Badge variant="outline">{wordOfTheDay.category}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 mb-6 text-lg">{wordOfTheDay.definition}</p>
-            
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium mb-2 text-primary">Example:</h4>
-                <p className="text-gray-600 italic border-l-4 border-primary/20 pl-4 py-1">
-                  {wordOfTheDay.example}
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-medium mb-2 text-primary">Case Reference:</h4>
-                <p className="text-gray-600 border-l-4 border-primary/20 pl-4 py-1">
-                  {wordOfTheDay.caseReference}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="border-t pt-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between w-full gap-4">
-              <Button variant="outline" className="sm:flex-1">
-                Previous Word
-              </Button>
-              <Link href="/dashboard">
-                <Button className="w-full sm:flex-1">
-                  Explore More Terms
-                </Button>
-              </Link>
-            </div>
-          </CardFooter>
-        </Card>
+        <WordOfTheDaySection />
       </div>
       
       {/* Call-to-action for Law Notes */}

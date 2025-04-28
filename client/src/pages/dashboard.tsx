@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, PlusCircle, Share2 } from 'lucide-react';
+import { Search, PlusCircle, Share2, Loader2 } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -13,72 +13,20 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'wouter';
 import { toast } from '@/hooks/use-toast';
-
-// Sample legal terms data
-const sampleTerms = [
-  {
-    id: 1,
-    term: 'Habeas Corpus',
-    definition: 'A legal action or writ by which detainees can seek relief from unlawful imprisonment.',
-    category: 'Constitutional Law',
-    examples: [
-      'The defendant filed a petition for habeas corpus after claiming his constitutional rights were violated during the trial.'
-    ]
-  },
-  {
-    id: 2,
-    term: 'Stare Decisis',
-    definition: 'A legal doctrine that obligates courts to follow historical cases when making a ruling on a similar case.',
-    category: 'Legal Principles',
-    examples: [
-      'The Supreme Court relied on stare decisis when it upheld the precedent set in Roe v. Wade.'
-    ]
-  },
-  {
-    id: 3,
-    term: 'Mens Rea',
-    definition: 'The intention or knowledge of wrongdoing that constitutes part of a crime.',
-    category: 'Criminal Law',
-    examples: [
-      'The prosecution had to prove mens rea to establish that the defendant knowingly committed the crime.'
-    ]
-  },
-  {
-    id: 4,
-    term: 'Tort',
-    definition: 'A civil wrong that causes someone else to suffer loss or harm, resulting in legal liability for the person who commits the act.',
-    category: 'Civil Law',
-    examples: [
-      'The plaintiff filed a tort claim against the company for negligence that resulted in personal injury.'
-    ]
-  },
-  {
-    id: 5,
-    term: 'Pro Bono',
-    definition: 'Professional work undertaken voluntarily and without payment as a public service.',
-    category: 'Legal Practice',
-    examples: [
-      'The attorney took the case pro bono because the client couldn\'t afford legal representation.'
-    ]
-  },
-  {
-    id: 6,
-    term: 'Voir Dire',
-    definition: 'The preliminary examination of a witness or a juror to determine their competency to give or hear evidence.',
-    category: 'Trial Procedure',
-    examples: [
-      'During voir dire, the attorneys questioned potential jurors about their knowledge of the highly publicized case.'
-    ]
-  }
-];
+import { useTerms } from '@/hooks/useTerms';
+import { Term } from '@shared/schema';
 
 // Categories for filtering
 const categories = [
   'All Categories',
   'Constitutional Law',
   'Legal Principles',
-  'Criminal Law',
-  'Civil Law', 
+  'Criminal Law', 
+  'Civil Law',
+  'Family Law',
+  'Property Law',
+  'Contract Law',
+  'Administrative Law',
   'Legal Practice',
   'Trial Procedure'
 ];
@@ -94,9 +42,19 @@ const shareViaWhatsApp = (term: string, definition: string) => {
 const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All Categories');
+  const [page, setPage] = useState(1);
+  const limit = 12;
+  
+  // Use the terms hook to fetch terms
+  const { useAllTerms } = useTerms();
+  const { data, isLoading, error } = useAllTerms(page, limit);
+  
+  // Get the terms and total from the response
+  const terms = data?.terms || [];
+  const total = data?.total || 0;
   
   // Filter terms based on search query and selected category
-  const filteredTerms = sampleTerms.filter(term => {
+  const filteredTerms = terms.filter((term: Term) => {
     const matchesSearch = term.term.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         term.definition.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = activeCategory === 'All Categories' || term.category === activeCategory;
@@ -152,7 +110,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <p className="text-sm text-gray-500">
-                  Showing {filteredTerms.length} of {sampleTerms.length} terms
+                  Showing {filteredTerms.length} of {total} terms
                 </p>
               </div>
             </div>
@@ -160,8 +118,35 @@ const Dashboard: React.FC = () => {
           
           {/* Terms Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredTerms.length > 0 ? (
-              filteredTerms.map(term => (
+            {isLoading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
+                <Card key={index} className="h-full">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="h-6 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                      <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-4 bg-gray-200 rounded w-full animate-pulse mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full animate-pulse mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse mb-2"></div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-4">
+                    <div className="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : error ? (
+              // Error state
+              <div className="col-span-2 text-center py-12">
+                <h3 className="text-lg font-medium text-red-500">Error loading terms</h3>
+                <p className="text-gray-500 mt-2">Please try again later</p>
+              </div>
+            ) : filteredTerms.length > 0 ? (
+              // Terms list
+              filteredTerms.map((term: Term) => (
                 <Card key={term.id} className="h-full">
                   <CardHeader>
                     <div className="flex justify-between items-start">
@@ -173,10 +158,10 @@ const Dashboard: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-700 mb-4">{term.definition}</p>
-                    {term.examples.length > 0 && (
+                    {term.example && (
                       <div>
                         <h4 className="font-medium mb-2">Example:</h4>
-                        <p className="text-gray-600 italic">{term.examples[0]}</p>
+                        <p className="text-gray-600 italic">{term.example}</p>
                       </div>
                     )}
                   </CardContent>
@@ -198,6 +183,7 @@ const Dashboard: React.FC = () => {
                 </Card>
               ))
             ) : (
+              // No results
               <div className="col-span-2 text-center py-12">
                 <h3 className="text-lg font-medium">No terms found</h3>
                 <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
