@@ -23,7 +23,19 @@ import {
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, UsersRound, MonitorSmartphone, TabletSmartphone, Smartphone } from 'lucide-react';
+import { 
+  Loader2, 
+  UsersRound, 
+  MonitorSmartphone, 
+  TabletSmartphone, 
+  Smartphone,
+  Check, 
+  X, 
+  Eye, 
+  AlertCircle, 
+  Pencil, 
+  Trash2 
+} from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import {
@@ -35,8 +47,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Submission, Term } from '@shared/schema';
-import { Check, X, Eye, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +64,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Submission, Term } from '@shared/schema';
 
 // Submissions Review Component
 const SubmissionsReview = () => {
@@ -471,6 +490,453 @@ const PendingTermsReview = () => {
   );
 };
 
+// Terms Management Component
+const TermsManagement = () => {
+  const queryClient = useQueryClient();
+  const [showDetails, setShowDetails] = useState<Term | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState<string>('');
+  
+  // Form for editing terms
+  const form = useForm<{
+    id: number;
+    term: string;
+    pronunciation: string | null;
+    definition: string;
+    category: string;
+    example: string | null;
+  }>({
+    defaultValues: {
+      id: 0,
+      term: '',
+      pronunciation: '',
+      definition: '',
+      category: '',
+      example: ''
+    }
+  });
+  
+  // Fetch all terms
+  const { data, isLoading, isError } = useQuery<{ terms: Term[], total: number }>({
+    queryKey: ['/api/terms', searchTerm, category],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('approved', 'true');
+      params.append('page', '1');
+      params.append('limit', '100');
+      
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      
+      if (category) {
+        params.append('category', category);
+      }
+      
+      const response = await fetch(`/api/terms?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch terms');
+      }
+      return response.json();
+    }
+  });
+  
+  // Delete term mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/terms/${id}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
+      toast({
+        title: 'Term deleted',
+        description: 'The term has been deleted from the dictionary.',
+      });
+      setShowDetails(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete term',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Update term mutation
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: number, term: any }) => 
+      apiRequest('PUT', `/api/admin/terms/${data.id}`, data.term),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
+      toast({
+        title: 'Term updated',
+        description: 'The term has been updated successfully.',
+      });
+      setShowDetails(null);
+      setEditMode(false);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update term',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Categories for filtering
+  const categories = [
+    { label: 'All Categories', value: '' },
+    { label: 'Constitutional', value: 'Constitutional' },
+    { label: 'Criminal', value: 'Criminal' },
+    { label: 'Civil', value: 'Civil' },
+    { label: 'Family', value: 'Family' },
+    { label: 'Procedural', value: 'Procedural' },
+    { label: 'Contract', value: 'Contract' },
+    { label: 'Property', value: 'Property' },
+    { label: 'Administrative', value: 'Administrative' },
+    { label: 'International', value: 'International' },
+    { label: 'Other', value: 'Other' },
+  ];
+  
+  const handleEditClick = (term: Term) => {
+    setShowDetails(term);
+    setEditMode(true);
+    form.reset({
+      id: term.id,
+      term: term.term,
+      pronunciation: term.pronunciation,
+      definition: term.definition,
+      category: term.category,
+      example: term.example
+    });
+  };
+  
+  const handleViewClick = (term: Term) => {
+    setShowDetails(term);
+    setEditMode(false);
+  };
+  
+  const handleSubmitEdit = (formData: any) => {
+    updateMutation.mutate({
+      id: formData.id,
+      term: {
+        term: formData.term,
+        pronunciation: formData.pronunciation || null,
+        definition: formData.definition,
+        category: formData.category,
+        example: formData.example || null
+      }
+    });
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  if (isError || !data) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <AlertCircle className="h-12 w-12 mx-auto mb-2" />
+        <p>Error loading terms. Please try again.</p>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <Input
+            placeholder="Search terms..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat) => (
+              <SelectItem key={cat.value} value={cat.value}>
+                {cat.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {data.terms.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border">
+          <p className="text-gray-500">No terms found matching your criteria.</p>
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px]">Term</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="hidden md:table-cell">Definition</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.terms.map((term) => (
+              <TableRow key={term.id}>
+                <TableCell className="font-medium">
+                  {term.term}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{term.category}</Badge>
+                </TableCell>
+                <TableCell className="hidden md:table-cell truncate max-w-[300px]">
+                  {term.definition.length > 100 
+                    ? term.definition.substring(0, 100) + '...' 
+                    : term.definition}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleViewClick(term)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-blue-600"
+                      onClick={() => handleEditClick(term)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => deleteMutation.mutate(term.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+      
+      {/* Term Details Dialog */}
+      {showDetails && !editMode && (
+        <Dialog open={!!showDetails && !editMode} onOpenChange={(open) => !open && setShowDetails(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Term Details</DialogTitle>
+              <DialogDescription>View the full details of this term</DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Term</h3>
+                  <p className="text-lg font-semibold">{showDetails.term}</p>
+                  {showDetails.pronunciation && (
+                    <p className="text-sm text-gray-500">/{showDetails.pronunciation}/</p>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Category</h3>
+                  <p><Badge>{showDetails.category}</Badge></p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Definition</h3>
+                <p className="bg-gray-50 p-3 rounded-md mt-1">{showDetails.definition}</p>
+              </div>
+              
+              {showDetails.example && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Example</h3>
+                  <p className="bg-gray-50 p-3 rounded-md mt-1 border-l-4 border-primary">{showDetails.example}</p>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter className="gap-2 flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowDetails(null)}
+              >
+                Close
+              </Button>
+              <Button
+                variant="outline"
+                className="text-blue-600"
+                onClick={() => handleEditClick(showDetails)}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteMutation.mutate(showDetails.id)}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Term Edit Dialog */}
+      {showDetails && editMode && (
+        <Dialog open={!!showDetails && editMode} onOpenChange={(open) => !open && setEditMode(false)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Edit Term</DialogTitle>
+              <DialogDescription>Make changes to the term details</DialogDescription>
+            </DialogHeader>
+            
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmitEdit)} className="space-y-4 mt-4">
+                <input type="hidden" {...form.register('id')} />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="term"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Term</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="pronunciation"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pronunciation (optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value || ''} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.slice(1).map((category) => (
+                            <SelectItem key={category.value} value={category.value}>
+                              {category.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="definition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Definition</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={4}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="example"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Example (optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          rows={3}
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <DialogFooter className="gap-2 flex-row sm:justify-end pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setEditMode(false);
+                      setShowDetails(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+};
+
 // Visitor Statistics Component
 type VisitorStats = {
   total: number;
@@ -857,6 +1323,7 @@ const AdminPage: React.FC = () => {
           <TabsList className="w-full border-b">
             <TabsTrigger value="submissions" className="flex-1">Submissions</TabsTrigger>
             <TabsTrigger value="pending-terms" className="flex-1">Pending Terms</TabsTrigger>
+            <TabsTrigger value="manage-terms" className="flex-1">Manage Terms</TabsTrigger>
             <TabsTrigger value="statistics" className="flex-1">Visitor Stats</TabsTrigger>
             <TabsTrigger value="notes" className="flex-1">Law Notes</TabsTrigger>
           </TabsList>
@@ -877,6 +1344,15 @@ const AdminPage: React.FC = () => {
             </p>
             
             <PendingTermsReview />
+          </TabsContent>
+          
+          <TabsContent value="manage-terms" className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Manage Dictionary Terms</h2>
+            <p className="text-gray-500 mb-4">
+              View, edit, or delete existing terms in the dictionary.
+            </p>
+            
+            <TermsManagement />
           </TabsContent>
           
           <TabsContent value="statistics" className="p-6">
