@@ -223,27 +223,58 @@ export class DatabaseStorage implements IStorage {
   async deleteTermById(id: number): Promise<boolean> {
     // First check if the term exists
     const term = await this.getTerm(id);
+    console.log(`Deleting term with ID ${id}, exists: ${!!term}`, term);
+    
     if (!term) {
       return false;
     }
     
-    // Start a transaction to maintain referential integrity
-    return await db.transaction(async (tx) => {
-      // Delete related cases first
-      await tx.delete(schema.cases)
-        .where(eq(schema.cases.termId, id));
-      
-      // Delete related examples
-      await tx.delete(schema.examples)
-        .where(eq(schema.examples.termId, id));
-      
-      // Delete term
-      const [deletedTerm] = await tx.delete(schema.terms)
-        .where(eq(schema.terms.id, id))
-        .returning();
+    try {
+      // Start a transaction to maintain referential integrity
+      const result = await db.transaction(async (tx) => {
+        console.log(`Starting transaction to delete term ID: ${id}`);
         
-      return !!deletedTerm;
-    });
+        // Delete related cases
+        const deletedCases = await tx.delete(schema.cases)
+          .where(eq(schema.cases.termId, id))
+          .returning();
+        console.log(`Deleted ${deletedCases.length} cases for term ID: ${id}`);
+        
+        // Delete related examples
+        const deletedExamples = await tx.delete(schema.examples)
+          .where(eq(schema.examples.termId, id))
+          .returning();
+        console.log(`Deleted ${deletedExamples.length} examples for term ID: ${id}`);
+        
+        // Delete related favorites
+        const deletedFavorites = await tx.delete(schema.favorites)
+          .where(eq(schema.favorites.termId, id))
+          .returning();
+        console.log(`Deleted ${deletedFavorites.length} favorites for term ID: ${id}`);
+        
+        // Delete related reports (if any)
+        await tx.delete(schema.reports)
+          .where(and(
+            eq(schema.reports.contentType, 'term'),
+            eq(schema.reports.contentId, id)
+          ));
+        
+        // Now delete the term itself
+        const [deletedTerm] = await tx.delete(schema.terms)
+          .where(eq(schema.terms.id, id))
+          .returning();
+        
+        console.log(`Term deletion result:`, !!deletedTerm, deletedTerm);
+        
+        return !!deletedTerm;
+      });
+      
+      console.log(`Transaction completed for term ID: ${id}, result: ${result}`);
+      return result;
+    } catch (error) {
+      console.error(`Error deleting term ID: ${id}`, error);
+      throw error;
+    }
   }
   
   async updateTerm(id: number, termData: Partial<schema.InsertTerm>): Promise<schema.Term | undefined> {
