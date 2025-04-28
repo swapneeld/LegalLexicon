@@ -59,10 +59,13 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({ term, isLoading }) => {
 
   return (
     <Card className="max-w-3xl mx-auto">
-      <CardHeader className="bg-gradient-to-r from-primary-light to-primary text-white rounded-t-lg">
+      <CardHeader className="bg-gradient-to-r from-primary to-blue-700 text-white rounded-t-lg">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-3xl font-serif font-bold">{term.term}</CardTitle>
+            <CardTitle className="text-3xl font-bold text-white">{term.term}</CardTitle>
+            <div className="bg-yellow-300 text-black px-3 py-1 rounded-md inline-block mt-2">
+              <p className="font-medium">{term.term}</p>
+            </div>
             {term.origin && <p className="italic text-neutral-200 mt-1">[{term.origin}]</p>}
           </div>
           <Badge variant="secondary">{term.category}</Badge>
