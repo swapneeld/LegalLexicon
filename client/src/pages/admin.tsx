@@ -546,7 +546,8 @@ const TermsManagement = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/terms/${id}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
+      // Match the exact query key pattern used in the useQuery above
+      queryClient.invalidateQueries({ queryKey: ['/api/terms', searchTerm, category] });
       toast({
         title: 'Term deleted',
         description: 'The term has been deleted from the dictionary.',
@@ -567,7 +568,8 @@ const TermsManagement = () => {
     mutationFn: (data: { id: number, term: any }) => 
       apiRequest('PUT', `/api/admin/terms/${data.id}`, data.term),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
+      // Match the exact query key pattern used in the useQuery above
+      queryClient.invalidateQueries({ queryKey: ['/api/terms', searchTerm, category] });
       toast({
         title: 'Term updated',
         description: 'The term has been updated successfully.',

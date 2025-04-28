@@ -426,7 +426,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiRouter}/admin/terms/:id`, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`Attempting to delete term with ID: ${id}`);
+      
+      // Check if term exists first
+      const termExists = await storage.getTerm(id);
+      console.log(`Term exists check:`, !!termExists);
+      
       const result = await storage.deleteTermById(id);
+      console.log(`Delete result:`, result);
       
       if (result) {
         res.status(200).json({ success: true });
@@ -434,6 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ message: "Term not found" });
       }
     } catch (err) {
+      console.error(`Error deleting term:`, err);
       handleError(res, err);
     }
   });
