@@ -24,7 +24,452 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, UsersRound, MonitorSmartphone, TabletSmartphone, Smartphone } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from '@/components/ui/badge';
+import { Submission, Term } from '@shared/schema';
+import { Check, X, Eye, AlertCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+// Submissions Review Component
+const SubmissionsReview = () => {
+  const queryClient = useQueryClient();
+  const [showDetails, setShowDetails] = useState<Submission | null>(null);
+  
+  // Fetch submissions
+  const { data, isLoading, isError } = useQuery<{ submissions: Submission[], total: number }>({
+    queryKey: ['/api/submissions'],
+    queryFn: async () => {
+      const response = await fetch('/api/submissions?processed=false&page=1&limit=50');
+      if (!response.ok) {
+        throw new Error('Failed to fetch submissions');
+      }
+      return response.json();
+    }
+  });
+  
+  // Approve submission mutation
+  const approveMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/approve/submission/${id}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/submissions'] });
+      toast({
+        title: 'Submission approved',
+        description: 'The term submission has been approved and added to the dictionary.',
+      });
+      setShowDetails(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to approve submission',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Reject submission mutation
+  const rejectMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/reject/submission/${id}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/submissions'] });
+      toast({
+        title: 'Submission rejected',
+        description: 'The term submission has been rejected.',
+      });
+      setShowDetails(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to reject submission',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  if (isError || !data) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <AlertCircle className="h-12 w-12 mx-auto mb-2" />
+        <p>Error loading submissions. Please try again.</p>
+      </div>
+    );
+  }
+  
+  if (data.submissions.length === 0) {
+    return (
+      <div className="text-center py-12 bg-gray-50 rounded-lg border">
+        <p className="text-gray-500">No pending submissions to review.</p>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Term</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Submitted By</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.submissions.map((submission) => (
+            <TableRow key={submission.id}>
+              <TableCell className="font-medium">
+                {submission.term}
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{submission.category}</Badge>
+              </TableCell>
+              <TableCell>{submission.submitterName || 'Anonymous'}</TableCell>
+              <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowDetails(submission)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => approveMutation.mutate(submission.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => rejectMutation.mutate(submission.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      
+      {/* Submission Details Dialog */}
+      {showDetails && (
+        <Dialog open={!!showDetails} onOpenChange={(open) => !open && setShowDetails(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Submission Details</DialogTitle>
+              <DialogDescription>Review the full details of this submission</DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Term</h3>
+                  <p className="text-lg font-semibold">{showDetails.term}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Category</h3>
+                  <p><Badge>{showDetails.category}</Badge></p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Definition</h3>
+                <p className="bg-gray-50 p-3 rounded-md mt-1">{showDetails.definition}</p>
+              </div>
+              
+              {showDetails.example && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Example</h3>
+                  <p className="bg-gray-50 p-3 rounded-md mt-1 border-l-4 border-primary">{showDetails.example}</p>
+                </div>
+              )}
+              
+              {showDetails.caseName && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Case Reference</h3>
+                  <div className="bg-gray-50 p-3 rounded-md mt-1">
+                    <p className="font-medium">{showDetails.caseName} {showDetails.caseCitation && `(${showDetails.caseCitation})`}</p>
+                    {showDetails.caseDescription && <p className="mt-1 text-gray-700">{showDetails.caseDescription}</p>}
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Submitted By</h3>
+                  <p>{showDetails.submitterName || 'Anonymous'}</p>
+                </div>
+                {/* Email field would go here if we collect it */}
+                {showDetails.submitterMobile && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Mobile</h3>
+                    <p>{showDetails.submitterMobile}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <DialogFooter className="gap-2 flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowDetails(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => rejectMutation.mutate(showDetails.id)}
+                disabled={rejectMutation.isPending}
+              >
+                {rejectMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <X className="mr-2 h-4 w-4" />}
+                Reject
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => approveMutation.mutate(showDetails.id)}
+                disabled={approveMutation.isPending}
+              >
+                {approveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                Approve
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+};
+
+// Pending Terms Review Component
+const PendingTermsReview = () => {
+  const queryClient = useQueryClient();
+  const [showDetails, setShowDetails] = useState<Term | null>(null);
+  
+  // Fetch pending terms
+  const { data, isLoading, isError } = useQuery<{ terms: Term[], total: number }>({
+    queryKey: ['/api/terms'],
+    queryFn: async () => {
+      const response = await fetch('/api/terms?approved=false&page=1&limit=50');
+      if (!response.ok) {
+        throw new Error('Failed to fetch pending terms');
+      }
+      return response.json();
+    }
+  });
+  
+  // Approve term mutation
+  const approveMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('PUT', `/api/admin/approve/term/${id}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
+      toast({
+        title: 'Term approved',
+        description: 'The term has been approved and is now visible in the dictionary.',
+      });
+      setShowDetails(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to approve term',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Delete term mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/terms/${id}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
+      toast({
+        title: 'Term deleted',
+        description: 'The term has been deleted from the system.',
+      });
+      setShowDetails(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete term',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  if (isError || !data) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        <AlertCircle className="h-12 w-12 mx-auto mb-2" />
+        <p>Error loading pending terms. Please try again.</p>
+      </div>
+    );
+  }
+  
+  if (data.terms.length === 0) {
+    return (
+      <div className="text-center py-12 bg-gray-50 rounded-lg border">
+        <p className="text-gray-500">No pending terms to review.</p>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Term</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Added</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.terms.map((term) => (
+            <TableRow key={term.id}>
+              <TableCell className="font-medium">
+                {term.term}
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{term.category}</Badge>
+              </TableCell>
+              <TableCell>{new Date(term.createdAt).toLocaleDateString()}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowDetails(term)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => approveMutation.mutate(term.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => deleteMutation.mutate(term.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      
+      {/* Term Details Dialog */}
+      {showDetails && (
+        <Dialog open={!!showDetails} onOpenChange={(open) => !open && setShowDetails(null)}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Term Details</DialogTitle>
+              <DialogDescription>Review the full details of this term</DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Term</h3>
+                  <p className="text-lg font-semibold">{showDetails.term}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Category</h3>
+                  <p><Badge>{showDetails.category}</Badge></p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Definition</h3>
+                <p className="bg-gray-50 p-3 rounded-md mt-1">{showDetails.definition}</p>
+              </div>
+              
+              {showDetails.example && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Example</h3>
+                  <p className="bg-gray-50 p-3 rounded-md mt-1 border-l-4 border-primary">{showDetails.example}</p>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter className="gap-2 flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowDetails(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => deleteMutation.mutate(showDetails.id)}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <X className="mr-2 h-4 w-4" />}
+                Delete
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => approveMutation.mutate(showDetails.id)}
+                disabled={approveMutation.isPending}
+              >
+                {approveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                Approve
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  );
+};
 
 // Visitor Statistics Component
 type VisitorStats = {
@@ -418,24 +863,20 @@ const AdminPage: React.FC = () => {
           
           <TabsContent value="submissions" className="p-6">
             <h2 className="text-xl font-semibold mb-4">Term Submissions</h2>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-4">
               Review user-submitted terms and approve or reject them.
             </p>
             
-            <div className="mt-6 text-center">
-              <p>Submissions functionality will be implemented soon.</p>
-            </div>
+            <SubmissionsReview />
           </TabsContent>
           
           <TabsContent value="pending-terms" className="p-6">
             <h2 className="text-xl font-semibold mb-4">Pending Terms</h2>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-4">
               Review and approve terms that have been flagged for review.
             </p>
             
-            <div className="mt-6 text-center">
-              <p>Pending terms functionality will be implemented soon.</p>
-            </div>
+            <PendingTermsReview />
           </TabsContent>
           
           <TabsContent value="statistics" className="p-6">
