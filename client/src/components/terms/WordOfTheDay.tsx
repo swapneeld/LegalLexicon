@@ -75,7 +75,7 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({ term, isLoading }) => {
         
         {term.example && (
           <>
-            <h3 className="text-lg font-medium text-neutral-900 mb-2">Example</h3>
+            <h3 className="text-lg font-medium text-neutral-900 mb-2">Example 1</h3>
             <p className="text-neutral-700 bg-neutral-50 p-4 rounded-md mb-6 border-l-4 border-primary">
               "{term.example}"
             </p>
@@ -84,7 +84,7 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({ term, isLoading }) => {
         
         {term.cases && term.cases.length > 0 && (
           <>
-            <h3 className="text-lg font-medium text-neutral-900 mb-2">Landmark Case</h3>
+            <h3 className="text-lg font-medium text-neutral-900 mb-2">Example 2 (Case Reference)</h3>
             <div className="bg-neutral-50 p-4 rounded-md border border-neutral-200 mb-4">
               <h4 className="font-medium text-primary-dark">
                 {term.cases[0].caseName} {term.cases[0].year && `(${term.cases[0].year})`}
