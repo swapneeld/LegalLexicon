@@ -421,6 +421,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       handleError(res, err);
     }
   });
+  
+  // Admin endpoints for managing terms
+  app.delete(`${apiRouter}/admin/terms/:id`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await storage.deleteTermById(id);
+      
+      if (result) {
+        res.status(200).json({ success: true });
+      } else {
+        res.status(404).json({ message: "Term not found" });
+      }
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/terms/:id`, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const termData = req.body;
+      
+      const result = await storage.updateTerm(id, termData);
+      
+      if (result) {
+        res.status(200).json(result);
+      } else {
+        res.status(404).json({ message: "Term not found" });
+      }
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
 
   app.put(`${apiRouter}/admin/approve/example/:id`, async (req, res) => {
     try {

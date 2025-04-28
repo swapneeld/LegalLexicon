@@ -220,6 +220,48 @@ export class DatabaseStorage implements IStorage {
     return cases;
   }
   
+  async deleteTermById(id: number): Promise<boolean> {
+    // First check if the term exists
+    const term = await this.getTerm(id);
+    if (!term) {
+      return false;
+    }
+    
+    // Start a transaction to maintain referential integrity
+    return await db.transaction(async (tx) => {
+      // Delete related cases first
+      await tx.delete(schema.cases)
+        .where(eq(schema.cases.termId, id));
+      
+      // Delete related examples
+      await tx.delete(schema.examples)
+        .where(eq(schema.examples.termId, id));
+      
+      // Delete term
+      const [deletedTerm] = await tx.delete(schema.terms)
+        .where(eq(schema.terms.id, id))
+        .returning();
+        
+      return !!deletedTerm;
+    });
+  }
+  
+  async updateTerm(id: number, termData: Partial<schema.InsertTerm>): Promise<schema.Term | undefined> {
+    // Check if the term exists
+    const term = await this.getTerm(id);
+    if (!term) {
+      return undefined;
+    }
+    
+    // Update the term
+    const [updatedTerm] = await db.update(schema.terms)
+      .set(termData)
+      .where(eq(schema.terms.id, id))
+      .returning();
+      
+    return updatedTerm;
+  }
+  
   // Submission operations
   async createSubmission(submission: schema.InsertSubmission): Promise<schema.Submission> {
     const [newSubmission] = await db.insert(schema.submissions)
