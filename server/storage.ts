@@ -21,6 +21,7 @@ export interface IStorage {
     approved?: boolean;
   }): Promise<{ terms: schema.Term[]; total: number }>;
   getWordOfTheDay(): Promise<schema.Term | undefined>;
+  getCasesByTermId(termId: number, approved?: boolean): Promise<schema.Case[]>;
   
   // Submission operations
   createSubmission(submission: schema.InsertSubmission): Promise<schema.Submission>;
@@ -202,6 +203,19 @@ export class DatabaseStorage implements IStorage {
     }
     
     return undefined;
+  }
+  
+  async getCasesByTermId(termId: number, approved: boolean = true): Promise<schema.Case[]> {
+    const cases = await db.select()
+      .from(schema.cases)
+      .where(
+        and(
+          eq(schema.cases.termId, termId),
+          eq(schema.cases.isApproved, approved)
+        )
+      );
+    
+    return cases;
   }
   
   // Submission operations
