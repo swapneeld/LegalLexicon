@@ -101,105 +101,21 @@ const Home: React.FC = () => {
         </Card>
       </div>
       
-      {/* Law Notes Section */}
-      <div className="mt-12">
-        <div className="flex items-center mb-6">
-          <BookOpen className="text-primary mr-2 h-6 w-6" />
-          <h2 className="text-2xl font-bold">Law Notes</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Semester 3 */}
-          <Card className="hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-xl">Semester 3 Notes</CardTitle>
-              <CardDescription>
-                Essential study materials for third semester law students
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                <li>Constitutional Law I</li>
-                <li>Law of Contracts</li>
-                <li>Law of Torts and Consumer Protection</li>
-                <li>Family Law I</li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/dashboard?category=sem3">
-                <Button variant="outline" className="w-full">View Sem 3 Notes</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-          
-          {/* Semester 4 */}
-          <Card className="hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-xl">Semester 4 Notes</CardTitle>
-              <CardDescription>
-                Comprehensive Q&A for fourth semester subjects
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                <li>Constitutional Law II</li>
-                <li>Administrative Law</li>
-                <li>Family Law II</li>
-                <li>Law of Crimes</li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/dashboard?category=sem4">
-                <Button variant="outline" className="w-full">View Sem 4 Notes</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-          
-          {/* Semester 5 */}
-          <Card className="hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-xl">Semester 5 Notes</CardTitle>
-              <CardDescription>
-                Advanced study materials with case analyses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                <li>Corporate Law</li>
-                <li>Environmental Law</li>
-                <li>Civil Procedure Code</li>
-                <li>Alternative Dispute Resolution</li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/dashboard?category=sem5">
-                <Button variant="outline" className="w-full">View Sem 5 Notes</Button>
-              </Link>
-            </CardFooter>
-          </Card>
-          
-          {/* Semester 6 */}
-          <Card className="hover:border-primary/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-xl">Semester 6 Notes</CardTitle>
-              <CardDescription>
-                Final year preparation resources and practice questions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                <li>Criminal Procedure Code</li>
-                <li>Interpretation of Statutes</li>
-                <li>Law of Evidence</li>
-                <li>Jurisprudence</li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Link href="/dashboard?category=sem6">
-                <Button variant="outline" className="w-full">View Sem 6 Notes</Button>
-              </Link>
-            </CardFooter>
-          </Card>
+      {/* Call-to-action for Law Notes */}
+      <div className="mt-12 text-center">
+        <div className="max-w-3xl mx-auto bg-blue-50 rounded-lg p-6 border border-blue-200">
+          <BookOpen className="h-10 w-10 text-primary mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Explore Law Notes</h2>
+          <p className="text-gray-600 mb-4">
+            Access comprehensive law notes organized by semester, covering key subjects with essential concepts, case analyses, and practice questions.
+          </p>
+          <Link href="/notes">
+            <Button size="lg" className="gap-2">
+              <BookOpen className="h-5 w-5" />
+              View Law Notes
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
