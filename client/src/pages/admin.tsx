@@ -48,6 +48,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import TermsManagement from '@/components/admin/TermsManagement';
+import VisitorStatistics from '@/components/admin/VisitorStatistics';
+import LawNotesManager from '@/components/admin/LawNotesManager';
 import {
   Select,
   SelectContent,
@@ -1367,14 +1370,7 @@ const AdminPage: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="notes" className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Law Notes Management</h2>
-            <p className="text-gray-500">
-              Manage semester-wise law notes content.
-            </p>
-            
-            <div className="mt-6 text-center">
-              <p>Law notes management functionality will be implemented soon.</p>
-            </div>
+            <LawNotesManager />
           </TabsContent>
         </Tabs>
       </div>
